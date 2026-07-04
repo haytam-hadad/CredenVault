@@ -5,7 +5,6 @@ import {
   Settings,
   Bell,
   LogOut,
-  Shield,
   X,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
@@ -28,12 +27,12 @@ export default function Sidebar({ open, onClose }) {
   const navContent = (
     <>
       <div className="flex items-center gap-2 px-4 py-6 border-b border-slate-800">
-        <Shield className="w-8 h-8 text-brand-500" />
+        <img src="/logo.png" alt="CredenVault" className="w-9 h-9 object-contain" />
         <div>
-          <h1 className="text-lg font-bold text-white">CredenVault</h1>
+          <h1 className="text-lg font-bold text-slate-100">CredenVault</h1>
           <p className="text-xs text-slate-500">Gestion sécurisée</p>
         </div>
-        <button onClick={onClose} className="ml-auto lg:hidden p-1 text-slate-400 hover:text-white">
+        <button onClick={onClose} className="ml-auto lg:hidden p-1 text-slate-400 hover:text-slate-100">
           <X className="w-5 h-5" />
         </button>
       </div>
@@ -48,7 +47,7 @@ export default function Sidebar({ open, onClose }) {
               `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-brand-600/20 text-brand-400 border border-brand-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50'
               }`
             }
           >

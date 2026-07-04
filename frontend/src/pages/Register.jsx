@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, Shield } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button, Input } from '../components/ui';
 import PasswordStrength from '../components/accounts/PasswordStrength';
@@ -78,9 +78,9 @@ export default function Register() {
       <div className="w-full max-w-md relative animate-fade-in">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-600/20 border border-brand-500/30 mb-4">
-            <Shield className="w-8 h-8 text-brand-400" />
+            <img src="/logo.png" alt="CredenVault" className="w-11 h-11 object-contain" />
           </div>
-          <h1 className="text-3xl font-bold text-white">Créer un compte</h1>
+          <h1 className="text-3xl font-bold text-slate-100">Créer un compte</h1>
           <p className="text-slate-400 mt-2">Sécurisez vos identifiants dès maintenant</p>
         </div>
 

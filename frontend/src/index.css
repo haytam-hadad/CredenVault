@@ -2,9 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Theming: the `slate` Tailwind palette is driven by these CSS variables so the
+  whole app can switch between dark and light without changing class names.
+  `:root` holds the default DARK theme (identical to the original slate values).
+  `.light` inverts the scale so dark surfaces become light and light text
+  becomes dark — keeping contrast correct in both modes.
+*/
+:root {
+  --slate-50: 248 250 252;
+  --slate-100: 241 245 249;
+  --slate-200: 226 232 240;
+  --slate-300: 203 213 225;
+  --slate-400: 148 163 184;
+  --slate-500: 100 116 139;
+  --slate-600: 71 85 105;
+  --slate-700: 51 65 85;
+  --slate-800: 30 41 59;
+  --slate-900: 15 23 42;
+  --slate-950: 2 6 23;
+}
+
+.light {
+  --slate-50: 2 6 23;
+  --slate-100: 15 23 42;
+  --slate-200: 30 41 59;
+  --slate-300: 51 65 85;
+  --slate-400: 71 85 105;
+  --slate-500: 100 116 139;
+  --slate-600: 148 163 184;
+  --slate-700: 203 213 225;
+  --slate-800: 226 232 240;
+  --slate-900: 241 245 249;
+  --slate-950: 248 250 252;
+}
+
 @layer base {
+  html,
   body {
     @apply bg-slate-950 text-slate-100 font-sans;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 

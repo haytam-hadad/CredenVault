@@ -30,10 +30,10 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
         className={`relative w-full ${sizes[size]} glass-card p-6 animate-slide-up max-h-[90vh] overflow-y-auto`}
       >
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xl font-semibold text-white">{title}</h2>
+          <h2 className="text-xl font-semibold text-slate-100">{title}</h2>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

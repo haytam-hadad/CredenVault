@@ -15,7 +15,7 @@ export default function AccountCard({ account, onEdit, onDelete }) {
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h4 className="font-semibold text-white truncate">{account.serviceName}</h4>
+              <h4 className="font-semibold text-slate-100 truncate">{account.serviceName}</h4>
               {account.isFavorite && <Star className="w-4 h-4 text-yellow-400 fill-yellow-400 shrink-0" />}
             </div>
             <p className="text-sm text-slate-400 truncate">{account.username}</p>

@@ -140,7 +140,7 @@ export default function Settings() {
   return (
     <div className="space-y-6 animate-fade-in max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold text-white">Paramètres</h1>
+        <h1 className="text-2xl font-bold text-slate-100">Paramètres</h1>
         <p className="text-slate-400 mt-1">Gérez votre profil et votre sécurité</p>
       </div>
 
@@ -209,7 +209,7 @@ export default function Settings() {
               <Shield className={`w-5 h-5 ${user?.twoFactorEnabled ? 'text-emerald-400' : 'text-slate-500'}`} />
             </div>
             <div>
-              <p className="font-medium text-white">
+              <p className="font-medium text-slate-100">
                 {user?.twoFactorEnabled ? '2FA activée' : '2FA désactivée'}
               </p>
               <p className="text-sm text-slate-500">
