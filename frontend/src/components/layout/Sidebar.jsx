@@ -6,12 +6,22 @@ import {
   Bell,
   LogOut,
   X,
+  Zap,
+  Shield,
+  Activity,
+  Heart,
+  Download,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 
 const links = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/accounts', icon: KeyRound, label: 'Comptes' },
+  { to: '/favorites', icon: Heart, label: 'Favoris' },
+  { to: '/password-generator', icon: Zap, label: 'Générateur' },
+  { to: '/security-audit', icon: Shield, label: 'Audit Sécurité' },
+  { to: '/activity-log', icon: Activity, label: 'Journal d\'Activité' },
+  { to: '/data-management', icon: Download, label: 'Données' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
   { to: '/settings', icon: Settings, label: 'Paramètres' },
 ];

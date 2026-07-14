@@ -1,43 +1,49 @@
 const { z } = require('zod');
 
-const passwordSchema = z
-  .string()
-  .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
-  .max(128);
-
-const registerSchema = z.object({
-  body: z.object({
-    email: z.string().email('Email invalide'),
-    password: passwordSchema,
-    firstName: z.string().trim().optional(),
-    lastName: z.string().trim().optional(),
-  }),
+// Base schemas for reuse
+const createAccountBodySchema = z.object({
+  serviceName: z.string().trim().min(1, 'Nom du service requis').max(255, 'Nom du service trop long'),
+  username: z.string().trim().min(1, 'Identifiant requis').max(255, 'Identifiant trop long'),
+  password: z.string().min(1, 'Mot de passe requis').max(512, 'Mot de passe trop long'),
+  url: z.string().url('URL invalide').max(2048, 'URL trop long').optional().or(z.literal('')),
+  category: z
+    .enum(['email', 'social', 'finance', 'work', 'entertainment', 'other'])
+    .optional(),
+  notes: z.string().trim().max(5000, 'Notes trop longues').optional(),
+  isFavorite: z.boolean().optional(),
 });
 
-const loginSchema = z.object({
-  body: z.object({
-    email: z.string().email('Email invalide'),
-    password: z.string().min(1, 'Mot de passe requis'),
-    otpToken: z.string().length(6, 'Le code OTP doit contenir 6 chiffres').optional().or(z.literal('')),
-  }),
+const updateAccountBodySchema = z.object({
+  serviceName: z.string().trim().min(1).max(255, 'Nom du service trop long').optional(),
+  username: z.string().trim().min(1).max(255, 'Identifiant trop long').optional(),
+  password: z.string().min(1).max(512, 'Mot de passe trop long').optional(),
+  url: z.string().url('URL invalide').max(2048, 'URL trop long').optional().or(z.literal('')),
+  category: z
+    .enum(['email', 'social', 'finance', 'work', 'entertainment', 'other'])
+    .optional(),
+  notes: z.string().trim().max(5000, 'Notes trop longues').optional(),
+  isFavorite: z.boolean().optional(),
 });
 
-const verify2FASchema = z.object({
-  body: z.object({
-    token: z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),
-  }),
+const idParamsSchema = z.object({
+  id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'ID invalide'),
 });
 
-const disable2FASchema = z.object({
-  body: z.object({
-    password: z.string().min(1, 'Mot de passe requis'),
-    token: z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),
-  }),
+const createAccountSchema = z.object({
+  body: createAccountBodySchema,
+});
+
+const updateAccountSchema = z.object({
+  params: idParamsSchema,
+  body: updateAccountBodySchema,
+});
+
+const accountIdSchema = z.object({
+  params: idParamsSchema,
 });
 
 module.exports = {
-  registerSchema,
-  loginSchema,
-  verify2FASchema,
-  disable2FASchema,
+  createAccountSchema,
+  updateAccountSchema,
+  accountIdSchema,
 };

@@ -110,15 +110,14 @@ export default function Accounts() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Lock className="w-6 h-6 text-brand-400" />
-            <h1 className="text-2xl font-bold text-slate-100">Mes comptes</h1>
-          </div>
-          <p className="text-slate-400 mt-1">{pageInfo.total} compte(s) enregistré(s) • Page {page} sur {pageInfo.pages}</p>
-        </div>
+    <div className="space-y-6 animate-fade-in max-w-7xl">
+      <div className="animate-slide-in-down">
+        <h1 className="text-2xl font-bold text-slate-100 dark:text-slate-100 light:text-slate-900">Comptes</h1>
+        <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 mt-1">Gérez et sécurisez tous vos identifiants</p>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 mt-1">{pageInfo.total} compte(s) enregistré(s) • Page {page} sur {pageInfo.pages}</p>
         <Button onClick={openCreate}>
           <Plus className="w-4 h-4" />
           Ajouter un compte
@@ -168,7 +167,7 @@ export default function Accounts() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 animate-stagger">
             {accounts.map((account) => (
               <AccountCard
                 key={account._id}

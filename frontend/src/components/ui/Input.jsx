@@ -11,11 +11,11 @@ const Input = forwardRef(function Input(
       )}
       <div className="relative">
         {Icon && (
-          <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+          <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-500 light:text-slate-600 pointer-events-none" />
         )}
         <input
           ref={ref}
-          className={`input-field ${Icon ? 'pl-10' : ''} ${error ? 'border-red-500 focus:ring-red-500/50' : ''} ${className}`}
+          className={`input-field bg-slate-800 dark:bg-slate-800 light:bg-slate-50 border-slate-700 dark:border-slate-700 light:border-slate-300 text-slate-100 dark:text-slate-100 light:text-slate-900 placeholder-slate-500 dark:placeholder-slate-500 light:placeholder-slate-600 focus:ring-brand-500 dark:focus:ring-brand-500 light:focus:ring-brand-600 transition-all duration-200 ${Icon ? 'pl-10' : ''} ${error ? 'border-red-500 dark:border-red-500 light:border-red-400 focus:ring-red-500/50 dark:focus:ring-red-500/50 light:focus:ring-red-400/50' : ''} ${className}`}
           {...props}
         />
       </div>

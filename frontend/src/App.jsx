@@ -8,6 +8,11 @@ import Dashboard from './pages/Dashboard';
 import Accounts from './pages/Accounts';
 import Settings from './pages/Settings';
 import Notifications from './pages/Notifications';
+import PasswordGenerator from './pages/PasswordGenerator';
+import SecurityAudit from './pages/SecurityAudit';
+import ActivityLog from './pages/ActivityLog';
+import Favorites from './pages/Favorites';
+import DataManagement from './pages/DataManagement';
 import useAuthStore from './store/authStore';
 
 function PublicRoute({ children }) {
@@ -51,6 +56,11 @@ export default function App() {
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/accounts" element={<Accounts />} />
+            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/password-generator" element={<PasswordGenerator />} />
+            <Route path="/security-audit" element={<SecurityAudit />} />
+            <Route path="/activity-log" element={<ActivityLog />} />
+            <Route path="/data-management" element={<DataManagement />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
