@@ -6,7 +6,11 @@ const { createSecurityLog, getClientInfo } = require('../services/securityLogSer
 
 const getAccounts = async (req, res, next) => {
   try {
-    const { category, search } = req.query;
+    const { category, search, page = 1, limit = 50 } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const pageLimit = Math.min(100, Math.max(1, parseInt(limit, 10) || 50)); // Max 100 items per page
+    const skip = (pageNum - 1) * pageLimit;
+
     const filter = { userId: req.user._id };
 
     if (category) filter.category = category;
@@ -17,11 +21,17 @@ const getAccounts = async (req, res, next) => {
       ];
     }
 
-    const accounts = await Account.find(filter).sort({ updatedAt: -1 });
+    const [accounts, total] = await Promise.all([
+      Account.find(filter).sort({ updatedAt: -1 }).skip(skip).limit(pageLimit),
+      Account.countDocuments(filter),
+    ]);
 
     res.json({
       success: true,
       count: accounts.length,
+      total,
+      page: pageNum,
+      pages: Math.ceil(total / pageLimit),
       data: { accounts },
     });
   } catch (error) {
@@ -108,8 +118,9 @@ const updateAccount = async (req, res, next) => {
 
     const { serviceName, username, password, url, category, notes, isFavorite } = req.body;
 
-    if (serviceName) account.serviceName = serviceName;
-    if (username) account.username = username;
+    // Only update fields if they are provided and non-empty (except boolean/undefined)
+    if (serviceName && serviceName.trim()) account.serviceName = serviceName.trim();
+    if (username && username.trim()) account.username = username.trim();
     if (url !== undefined) account.url = url;
     if (category) account.category = category;
     if (notes !== undefined) account.notes = notes;

@@ -72,5 +72,7 @@ const accountSchema = new mongoose.Schema(
 );
 
 accountSchema.index({ userId: 1, serviceName: 1 });
+accountSchema.index({ userId: 1, category: 1 });
+accountSchema.index({ userId: 1, isFavorite: 1 });
 
 module.exports = mongoose.model('Account', accountSchema);

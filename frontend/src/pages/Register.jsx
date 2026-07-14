@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button, Input } from '../components/ui';
+import AuthLayout from '../components/layout/AuthLayout';
 import PasswordStrength from '../components/accounts/PasswordStrength';
 import useAuthStore from '../store/authStore';
 import { validateEmail, validatePassword } from '../utils/helpers';
@@ -70,22 +71,11 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-950">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-brand-600/10 rounded-full blur-3xl" />
-      </div>
-
-      <div className="w-full max-w-md relative animate-fade-in">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-600/20 border border-brand-500/30 mb-4">
-            <img src="/logo.png" alt="CredenVault" className="w-11 h-11 object-contain" />
-          </div>
-          <h1 className="text-3xl font-bold text-slate-100">Créer un compte</h1>
-          <p className="text-slate-400 mt-2">Sécurisez vos identifiants dès maintenant</p>
-        </div>
-
-        <div className="glass-card p-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
+    <AuthLayout
+      title="Créer un compte"
+      subtitle="Sécurisez vos identifiants dès maintenant"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <Input
                 label="Prénom"
@@ -139,19 +129,41 @@ export default function Register() {
               autoComplete="new-password"
             />
 
-            <Button type="submit" loading={isLoading} className="w-full mt-2">
-              S'inscrire
-            </Button>
-          </form>
+        <Button type="submit" loading={isLoading} className="w-full mt-6">
+          S'inscrire
+        </Button>
 
-          <p className="text-center text-sm text-slate-500 mt-6">
-            Déjà un compte ?{' '}
-            <Link to="/login" className="text-brand-400 hover:text-brand-300 font-medium">
-              Se connecter
-            </Link>
+        {/* Security Features */}
+        <div className="mt-6 pt-6 border-t border-slate-700 dark:border-slate-700 light:border-slate-300 space-y-2">
+          <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-400 light:text-slate-600">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-400 light:text-emerald-600 flex-shrink-0" />
+            <span>Chiffrement AES-256</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-400 light:text-slate-600">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-400 light:text-emerald-600 flex-shrink-0" />
+            <span>Stockage sécurisé</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-400 light:text-slate-600">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-400 light:text-emerald-600 flex-shrink-0" />
+            <span>2FA disponible</span>
+          </div>
+        </div>
+
+        {/* Footer Link */}
+        <p className="text-center text-sm text-slate-500 dark:text-slate-500 light:text-slate-600 mt-6">
+          Déjà un compte ?{' '}
+          <Link to="/login" className="text-brand-400 dark:text-brand-400 light:text-brand-600 hover:text-brand-300 dark:hover:text-brand-300 light:hover:text-brand-700 font-semibold transition-colors">
+            Se connecter
+          </Link>
+        </p>
+
+        {/* Trust Badge */}
+        <div className="mt-4 text-center">
+          <p className="text-xs text-slate-600 dark:text-slate-600 light:text-slate-500">
+            🔒 Votre compte est protégé dès sa création
           </p>
         </div>
-      </div>
-    </div>
+      </form>
+    </AuthLayout>
   );
 }

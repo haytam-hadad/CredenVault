@@ -188,6 +188,10 @@ const disable2FA = async (req, res, next) => {
     const { password, token } = req.body;
     const user = await User.findById(req.user._id).select('+password +twoFactorSecret');
 
+    if (!user.twoFactorEnabled) {
+      return next(new AppError('Authentification à deux facteurs non activée', 400));
+    }
+
     if (!(await user.comparePassword(password))) {
       return next(new AppError('Mot de passe incorrect', 401));
     }

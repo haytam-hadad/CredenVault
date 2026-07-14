@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { User, Lock, Shield, Bell } from 'lucide-react';
+import { User, Lock, Shield, Bell, AlertTriangle, CheckCircle2, QrCode, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card, Button, Input, Modal } from '../components/ui';
 import PasswordStrength from '../components/accounts/PasswordStrength';
@@ -202,43 +202,60 @@ export default function Settings() {
         </form>
       </Card>
 
-      <Card title="Authentification à deux facteurs (2FA)" subtitle="Couche de sécurité supplémentaire">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${user?.twoFactorEnabled ? 'bg-emerald-600/20' : 'bg-slate-800'}`}>
-              <Shield className={`w-5 h-5 ${user?.twoFactorEnabled ? 'text-emerald-400' : 'text-slate-500'}`} />
+      <Card title="Authentification à deux facteurs (2FA)" subtitle="Couche de sécurité supplémentaire" className="border-l-4 border-l-emerald-500">
+        {!user?.twoFactorEnabled ? (
+          <div className="space-y-4">
+            <div className="p-4 bg-yellow-600/10 border border-yellow-600/30 rounded-lg flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-yellow-300 mb-1">2FA non activée</p>
+                <p className="text-yellow-200/80">
+                  L'authentification à deux facteurs renforce considérablement la sécurité de votre compte.
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="font-medium text-slate-100">
-                {user?.twoFactorEnabled ? '2FA activée' : '2FA désactivée'}
-              </p>
-              <p className="text-sm text-slate-500">
-                {user?.twoFactorEnabled
-                  ? 'Votre compte est protégé par OTP'
-                  : 'Activez la 2FA pour plus de sécurité'}
-              </p>
+            <Button onClick={setup2FA} className="w-full">
+              <QrCode className="w-4 h-4" />
+              Activer la 2FA maintenant
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="p-4 bg-emerald-600/10 border border-emerald-600/30 rounded-lg flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-emerald-300 mb-1">2FA activée ✓</p>
+                <p className="text-emerald-200/80">
+                  Votre compte est protégé par une authentification basée sur OTP (One-Time Password).
+                </p>
+              </div>
+            </div>
+            <div className="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+              <p className="text-xs text-slate-500 mb-2">Pour désactiver la 2FA, entrez vos identifiants :</p>
+              <div className="space-y-3">
+                <Input
+                  label="Mot de passe"
+                  type="password"
+                  value={disableForm.password}
+                  onChange={(e) => setDisableForm((p) => ({ ...p, password: e.target.value }))}
+                  placeholder="Votre mot de passe"
+                />
+                <Input
+                  label="Code OTP (de votre app authenticateur)"
+                  type="text"
+                  value={disableForm.token}
+                  onChange={(e) => setDisableForm((p) => ({ ...p, token: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                  maxLength={6}
+                  placeholder="000000"
+                  inputMode="numeric"
+                />
+                <Button variant="danger" onClick={disable2FA} className="w-full">
+                  Désactiver la 2FA
+                </Button>
+              </div>
             </div>
           </div>
-          {!user?.twoFactorEnabled ? (
-            <Button onClick={setup2FA}>Activer</Button>
-          ) : (
-            <div className="space-y-2">
-              <Input
-                placeholder="Mot de passe"
-                type="password"
-                value={disableForm.password}
-                onChange={(e) => setDisableForm((p) => ({ ...p, password: e.target.value }))}
-              />
-              <Input
-                placeholder="Code OTP"
-                value={disableForm.token}
-                onChange={(e) => setDisableForm((p) => ({ ...p, token: e.target.value }))}
-                maxLength={6}
-              />
-              <Button variant="danger" onClick={disable2FA}>Désactiver</Button>
-            </div>
-          )}
-        </div>
+        )}
       </Card>
 
       {settings && (
@@ -282,22 +299,59 @@ export default function Settings() {
       <Modal
         isOpen={twoFAModal}
         onClose={() => setTwoFAModal(false)}
-        title="Configurer la 2FA"
+        title="Configurer l'authentification à deux facteurs"
       >
         {twoFAData && (
-          <div className="space-y-4 text-center">
-            <img src={twoFAData.qrCode} alt="QR Code 2FA" className="mx-auto w-48 h-48 rounded-lg" />
-            <p className="text-sm text-slate-400">
-              Scannez ce QR code avec Google Authenticator ou une app similaire
+          <div className="space-y-5">
+            <div className="bg-blue-600/10 border border-blue-600/30 rounded-lg p-4 text-sm text-blue-200">
+              <p className="font-medium mb-2">📱 Étape 1 : Téléchargez une application authenticateur</p>
+              <p className="text-xs">Google Authenticator, Authy, ou Microsoft Authenticator (disponible sur iOS/Android)</p>
+            </div>
+
+            <div className="bg-slate-800/50 rounded-xl p-6 flex flex-col items-center border border-slate-700">
+              <p className="text-xs text-slate-500 mb-3 font-medium">QR Code</p>
+              <img src={twoFAData.qrCode} alt="QR Code 2FA" className="rounded-lg border-2 border-brand-500/30" />
+              <p className="text-xs text-slate-400 mt-3">
+                Scannez ce code avec votre app authenticateur
+              </p>
+            </div>
+
+            <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
+              <p className="text-xs text-slate-500 mb-2">Clé secrète (si le scan ne fonctionne pas)</p>
+              <div className="flex items-center gap-2 p-2 bg-slate-900 rounded font-mono text-xs text-slate-300 break-all">
+                {twoFAData.secret}
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(twoFAData.secret);
+                    toast.success('Copié !');
+                  }}
+                  className="ml-auto shrink-0 p-1 text-slate-500 hover:text-brand-400"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs text-slate-500 font-medium">🔢 Étape 2 : Entrez le code de vérification</p>
+              <Input
+                value={otpToken}
+                onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="000000"
+                maxLength={6}
+                inputMode="numeric"
+                className="text-center tracking-widest text-xl"
+              />
+            </div>
+
+            <Button onClick={verify2FA} className="w-full">
+              <CheckCircle2 className="w-4 h-4" />
+              Vérifier et activer la 2FA
+            </Button>
+
+            <p className="text-xs text-slate-500 text-center">
+              ⚠️ Conservez vos codes de sauvegarde en lieu sûr
             </p>
-            <Input
-              label="Code de vérification"
-              value={otpToken}
-              onChange={(e) => setOtpToken(e.target.value)}
-              placeholder="000000"
-              maxLength={6}
-            />
-            <Button onClick={verify2FA} className="w-full">Vérifier et activer</Button>
           </div>
         )}
       </Modal>

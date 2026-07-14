@@ -1,44 +1,43 @@
 const { z } = require('zod');
 
-const createAccountSchema = z.object({
+const passwordSchema = z
+  .string()
+  .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
+  .max(128);
+
+const registerSchema = z.object({
   body: z.object({
-    serviceName: z.string().trim().min(1, 'Nom du service requis'),
-    username: z.string().trim().min(1, 'Identifiant requis'),
+    email: z.string().email('Email invalide'),
+    password: passwordSchema,
+    firstName: z.string().trim().optional(),
+    lastName: z.string().trim().optional(),
+  }),
+});
+
+const loginSchema = z.object({
+  body: z.object({
+    email: z.string().email('Email invalide'),
     password: z.string().min(1, 'Mot de passe requis'),
-    url: z.string().url('URL invalide').optional().or(z.literal('')),
-    category: z
-      .enum(['email', 'social', 'finance', 'work', 'entertainment', 'other'])
-      .optional(),
-    notes: z.string().trim().optional(),
-    isFavorite: z.boolean().optional(),
+    otpToken: z.string().length(6, 'Le code OTP doit contenir 6 chiffres').optional().or(z.literal('')),
   }),
 });
 
-const updateAccountSchema = z.object({
-  params: z.object({
-    id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'ID invalide'),
-  }),
+const verify2FASchema = z.object({
   body: z.object({
-    serviceName: z.string().trim().min(1).optional(),
-    username: z.string().trim().min(1).optional(),
-    password: z.string().min(1).optional(),
-    url: z.string().url('URL invalide').optional().or(z.literal('')),
-    category: z
-      .enum(['email', 'social', 'finance', 'work', 'entertainment', 'other'])
-      .optional(),
-    notes: z.string().trim().optional(),
-    isFavorite: z.boolean().optional(),
+    token: z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),
   }),
 });
 
-const accountIdSchema = z.object({
-  params: z.object({
-    id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'ID invalide'),
+const disable2FASchema = z.object({
+  body: z.object({
+    password: z.string().min(1, 'Mot de passe requis'),
+    token: z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),
   }),
 });
 
 module.exports = {
-  createAccountSchema,
-  updateAccountSchema,
-  accountIdSchema,
+  registerSchema,
+  loginSchema,
+  verify2FASchema,
+  disable2FASchema,
 };

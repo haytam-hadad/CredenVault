@@ -18,7 +18,12 @@ const loginSchema = z.object({
   body: z.object({
     email: z.string().email('Email invalide'),
     password: z.string().min(1, 'Mot de passe requis'),
-    otpToken: z.string().length(6).optional(),
+    otpToken: z.union([
+      z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),
+      z.string().length(0),
+      z.undefined(),
+      z.null(),
+    ]).optional(),
   }),
 });
 

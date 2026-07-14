@@ -7,7 +7,7 @@ const Input = forwardRef(function Input(
   return (
     <div className={`space-y-1.5 ${containerClassName}`}>
       {label && (
-        <label className="block text-sm font-medium text-slate-300">{label}</label>
+        <label className="block text-sm font-medium text-slate-300 dark:text-slate-300 light:text-slate-700">{label}</label>
       )}
       <div className="relative">
         {Icon && (

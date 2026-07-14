@@ -43,11 +43,46 @@
     @apply bg-slate-950 text-slate-100 font-sans;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
+
+  .light body {
+    @apply bg-slate-50 text-slate-900;
+  }
+
+  a {
+    @apply text-brand-400 hover:text-brand-300 transition-colors;
+  }
+
+  .light a {
+    @apply text-brand-600 hover:text-brand-700;
+  }
 }
 
 @layer components {
   .glass-card {
     @apply bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl shadow-xl;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .light .glass-card {
+    @apply bg-slate-100/60 border-slate-300/80;
+  }
+
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(30, 41, 59, 0) 100%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .glass-card:hover::before {
+    opacity: 1;
   }
 
   .input-field {
@@ -57,20 +92,161 @@
            transition-all duration-200;
   }
 
+  .light .input-field {
+    @apply bg-slate-200/80 border-slate-300 text-slate-900 placeholder-slate-500;
+  }
+
+  .light .input-field:focus {
+    @apply bg-slate-100 border-brand-500;
+  }
+
+  .input-field:focus {
+    @apply bg-slate-800/80 shadow-lg shadow-brand-500/10;
+  }
+
+  .light .input-field:focus {
+    @apply shadow-lg shadow-brand-500/20;
+  }
+
   .btn-primary {
-    @apply px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-medium rounded-xl
+    @apply px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-slate-100 font-medium rounded-xl
            transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed
-           focus:outline-none focus:ring-2 focus:ring-brand-500/50;
+           focus:outline-none focus:ring-2 focus:ring-brand-500/50 shadow-lg shadow-brand-600/20
+           hover:shadow-xl hover:shadow-brand-600/30;
+  }
+
+  .light .btn-primary {
+    @apply text-slate-900;
   }
 
   .btn-secondary {
-    @apply px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl
+    @apply px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-100 font-medium rounded-xl
            border border-slate-700 transition-all duration-200
-           focus:outline-none focus:ring-2 focus:ring-slate-600/50;
+           focus:outline-none focus:ring-2 focus:ring-slate-600/50
+           hover:border-slate-600;
+  }
+
+  .light .btn-secondary {
+    @apply bg-slate-300 hover:bg-slate-200 text-slate-900 border-slate-400 hover:border-slate-500;
   }
 
   .btn-danger {
-    @apply px-5 py-2.5 bg-red-600/90 hover:bg-red-500 text-white font-medium rounded-xl
-           transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50;
+    @apply px-5 py-2.5 bg-red-600/90 hover:bg-red-500 text-slate-100 font-medium rounded-xl
+           transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/50
+           shadow-lg shadow-red-600/20 hover:shadow-xl hover:shadow-red-600/30;
+  }
+
+  .light .btn-danger {
+    @apply text-slate-900;
+  }
+
+  /* Security-focused animations */
+  @keyframes pulse-subtle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  .security-pulse {
+    animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Lock icon indicator */
+  .lock-indicator {
+    @apply inline-flex items-center justify-center w-6 h-6 rounded-full bg-brand-600/20 border border-brand-500/30;
+  }
+
+  .lock-indicator::after {
+    content: '🔒';
+    font-size: 0.75rem;
+  }
+
+  /* Security score bar gradient */
+  .security-score-bar {
+    @apply w-full h-2 bg-slate-800 rounded-full overflow-hidden;
+  }
+
+  .security-score-bar-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+  }
+
+  .security-score-bar-fill.excellent {
+    @apply bg-gradient-to-r from-emerald-500 to-emerald-400;
+  }
+
+  .security-score-bar-fill.good {
+    @apply bg-gradient-to-r from-yellow-500 to-yellow-400;
+  }
+
+  .security-score-bar-fill.poor {
+    @apply bg-gradient-to-r from-red-500 to-red-400;
+  }
+
+  /* Light mode specific utilities */
+  .light .security-score-bar {
+    @apply bg-slate-200;
+  }
+
+  /* Text color utilities for light mode */
+  .text-slate-900-light {
+    @apply text-slate-900 dark:text-slate-100;
+  }
+
+  .text-slate-600-light {
+    @apply text-slate-600 dark:text-slate-400;
+  }
+
+  .text-slate-700-light {
+    @apply text-slate-700 dark:text-slate-300;
+  }
+
+  /* Background utilities for light mode */
+  .bg-slate-light {
+    @apply bg-slate-900 dark:bg-slate-900 light:bg-slate-200;
+  }
+
+  .bg-card-light {
+    @apply bg-slate-800 dark:bg-slate-800 light:bg-slate-100;
+  }
+
+  /* Hover states for light mode */
+  .hover-slate-light {
+    @apply hover:bg-slate-800 dark:hover:bg-slate-800 light:hover:bg-slate-200;
+  }
+
+  /* Border colors for light mode */
+  .border-slate-light {
+    @apply border-slate-700 dark:border-slate-700 light:border-slate-300;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-slate-900;
+  }
+
+  .light ::-webkit-scrollbar-track {
+    @apply bg-slate-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700 hover:bg-slate-600 rounded-full;
+  }
+
+  .light ::-webkit-scrollbar-thumb {
+    @apply bg-slate-400 hover:bg-slate-500 rounded-full;
+  }
+
+  /* Placeholder text for light mode */
+  .placeholder-light::placeholder {
+    @apply placeholder-slate-600 dark:placeholder-slate-500 light:placeholder-slate-500;
+  }
+
+  /* Focus rings for light mode */
+  .focus-light:focus {
+    @apply focus:ring-2 focus:ring-brand-500 focus:ring-opacity-50 dark:focus:ring-brand-500 light:focus:ring-brand-600;
   }
 }

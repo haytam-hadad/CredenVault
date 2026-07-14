@@ -2,7 +2,7 @@ const variants = {
   primary: 'btn-primary',
   secondary: 'btn-secondary',
   danger: 'btn-danger',
-  ghost: 'px-4 py-2 text-slate-300 hover:text-slate-100 hover:bg-slate-800 rounded-xl transition-colors',
+  ghost: 'px-4 py-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-xl transition-colors dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 light:text-slate-600 light:hover:text-slate-900 light:hover:bg-slate-200',
 };
 
 const sizes = {

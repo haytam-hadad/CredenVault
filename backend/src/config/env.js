@@ -8,8 +8,8 @@ for (const key of requiredEnvVars) {
   }
 }
 
-if (process.env.ENCRYPTION_KEY.length !== 64) {
-  throw new Error('ENCRYPTION_KEY doit être une clé hexadécimale de 64 caractères (32 bytes)');
+if (process.env.ENCRYPTION_KEY.length !== 64 || !/^[0-9a-f]{64}$/i.test(process.env.ENCRYPTION_KEY)) {
+  throw new Error('ENCRYPTION_KEY doit être une clé hexadécimale valide de 64 caractères (32 bytes)');
 }
 
 module.exports = {
