@@ -71,10 +71,10 @@ export default function DataManagement() {
         <Card title="Exporter les Données">
           <div className="space-y-4">
             <div className="p-4 bg-blue-600/10 border border-blue-600/30 rounded-lg">
-              <p className="text-sm text-blue-300 font-medium mb-2">
+              <p className="text-sm text-blue-500 font-medium mb-2">
                 À propos de l'exportation
               </p>
-              <p className="text-xs text-blue-200 leading-relaxed">
+              <p className="text-xs text-blue-400 leading-relaxed">
                 Téléchargez une sauvegarde chiffrée de tous vos comptes et mots de passe. 
                 Stockez-la en lieu sûr pour la récupération d'urgence.
               </p>
@@ -107,11 +107,11 @@ export default function DataManagement() {
         <Card title="Importer les Données">
           <div className="space-y-4">
             <div className="p-4 bg-orange-600/10 border border-orange-600/30 rounded-lg">
-              <p className="text-sm text-orange-300 font-medium mb-2 flex items-center gap-2">
+              <p className="text-sm text-orange-500 font-medium mb-2 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
                 Attention
               </p>
-              <p className="text-xs text-orange-200 leading-relaxed">
+              <p className="text-xs text-orange-400 leading-relaxed">
                 L'importation ajoutera les comptes du fichier à votre coffre. 
                 Les comptes en doublon ne seront pas remplacés.
               </p>

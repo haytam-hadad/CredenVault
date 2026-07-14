@@ -64,8 +64,8 @@
     overflow: hidden;
   }
 
-  .light .glass-card {
-    @apply bg-slate-100/60 border-slate-300/80;
+ .light .glass-card {
+    @apply bg-blue-200/10 border-blue-500;
   }
 
   .glass-card::before {
@@ -75,7 +75,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(30, 41, 59, 0) 100%);
+    background: linear-gradient(135deg, rgba(194, 193, 199, 0.05) 0%, rgba(30, 41, 59, 0) 100%);
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -93,11 +93,11 @@
   }
 
   .light .input-field {
-    @apply bg-slate-200/80 border-slate-300 text-slate-900 placeholder-slate-500;
+    @apply bg-slate-100/5  border-slate-300  placeholder-slate-500 text-black;
   }
 
   .light .input-field:focus {
-    @apply bg-slate-100 border-brand-500;
+    @apply bg-white border-brand-500 text-black ;
   }
 
   .input-field:focus {

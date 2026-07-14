@@ -34,7 +34,7 @@ export default function AuthLayout({ title, subtitle, children, icon: Icon }) {
               <img src="/logo.png" alt="CredenVault" className="w-10 h-10 object-contain" />
             )}
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-brand-400 to-indigo-400 dark:from-brand-400 dark:to-indigo-400 light:from-brand-600 light:to-indigo-600 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-brand-400 to-indigo-400 dark:from-brand-400 dark:to-indigo-400 light:from-brand-600 light:to-indigo-600 bg-clip-text text-transparent">
             CredenVault
           </h1>
           <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 mt-3 text-sm leading-relaxed">
