@@ -41,7 +41,7 @@ export default function Navbar({ onMenuClick }) {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-950/80 dark:bg-slate-950/80 light:bg-slate-100/80 backdrop-blur-xl border-b border-slate-800 dark:border-slate-800 light:border-slate-300 transition-colors duration-200">
+    <header className="sticky top-0 z-40 bg-slate-950/80 dark:bg-slate-950/80 light:bg-slate-100/80 backdrop-blur-xl border-b border-slate-800 dark:border-slate-800 light:border-slate-300 transition-colors duration-100">
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
         <div className="flex items-center gap-3">
           <button
@@ -80,8 +80,8 @@ export default function Navbar({ onMenuClick }) {
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-500 light:text-slate-600">{user?.email}</p>
           </div>
-          <div className="w-9 h-9 rounded-full bg-brand-600/30 dark:bg-brand-600/30 light:bg-brand-600/20 border border-brand-500/30 dark:border-brand-500/30 light:border-brand-500/50 flex items-center justify-center transition-colors">
-            <span className="text-brand-300 dark:text-brand-300 light:text-brand-700 font-semibold text-sm">
+          <div className="w-9 h-9 rounded-full bg-brand-600/60 border border-brand-500/30 dark:border-brand-500/30 light:border-brand-500/50 flex items-center justify-center transition-colors">
+            <span className="text-white font-semibold text-md">
               {(user?.firstName?.[0] || user?.email?.[0] || '?').toUpperCase()}
             </span>
           </div>

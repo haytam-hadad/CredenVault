@@ -59,41 +59,24 @@
 
 @layer components {
   .glass-card {
-    @apply bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl shadow-xl;
+    @apply bg-slate-900/50 backdrop-blur-lg border border-slate-800/80 rounded-2xl shadow-md;
     position: relative;
     overflow: hidden;
   }
 
  .light .glass-card {
-    @apply bg-blue-200/10 border-blue-500;
-  }
-
-  .glass-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(194, 193, 199, 0.05) 0%, rgba(30, 41, 59, 0) 100%);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .glass-card:hover::before {
-    opacity: 1;
+    @apply bg-blue-200/10;
   }
 
   .input-field {
-    @apply w-full px-4 py-2.5 bg-slate-800/50 border border-slate-700 rounded-xl
+    @apply w-full px-5 py-2.5 bg-slate-800/50 border border-slate-700 border-l-8  rounded-xl
            text-slate-100 placeholder-slate-500
-           focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500
+           focus:outline-none focus:ring-1 focus:ring-brand-500/50 focus:border-brand-500
            transition-all duration-200;
   }
 
   .light .input-field {
-    @apply bg-slate-100/5  border-slate-300  placeholder-slate-500 text-black;
+    @apply bg-white placeholder-slate-500 text-black;
   }
 
   .light .input-field:focus {
