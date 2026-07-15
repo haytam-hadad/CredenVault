@@ -24,6 +24,9 @@ export const accountService = {
   create: (data) => api.post('/accounts', data).then((r) => r.data),
   update: (id, data) => api.put(`/accounts/${id}`, data).then((r) => r.data),
   delete: (id) => api.delete(`/accounts/${id}`).then((r) => r.data),
+  exportData: () => api.get('/accounts/export/all').then((r) => r.data),
+  importData: (data) => api.post('/accounts/import/bulk', data).then((r) => r.data),
+  getStats: () => api.get('/accounts/stats').then((r) => r.data),
 };
 
 export const securityService = {
@@ -32,6 +35,7 @@ export const securityService = {
   generatePassword: (options) =>
     api.post('/security/password/generate', options).then((r) => r.data),
   getDashboard: () => api.get('/security/dashboard').then((r) => r.data),
+  getActivityLog: () => api.get('/security/logs').then((r) => r.data),
   getNotifications: (params) => api.get('/security/notifications', { params }).then((r) => r.data),
   markNotificationRead: (id) =>
     api.patch(`/security/notifications/${id}/read`).then((r) => r.data),

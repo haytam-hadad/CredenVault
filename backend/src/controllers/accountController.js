@@ -183,10 +183,125 @@ const deleteAccount = async (req, res, next) => {
   }
 };
 
+const exportAccounts = async (req, res, next) => {
+  try {
+    const accounts = await Account.find({ userId: req.user._id });
+    
+    // Decrypt passwords for export
+    const exportData = accounts.map(acc => ({
+      serviceName: acc.serviceName,
+      username: acc.username,
+      password: decrypt(acc.encryptedPassword, acc.iv),
+      url: acc.url,
+      category: acc.category,
+      notes: acc.notes,
+      isFavorite: acc.isFavorite,
+    }));
+
+    const clientInfo = getClientInfo(req);
+    await createSecurityLog({
+      userId: req.user._id,
+      action: 'data-exported',
+      ...clientInfo,
+      details: `${accounts.length} compte(s) exporté(s)`,
+    });
+
+    res.json({
+      success: true,
+      message: 'Export successful',
+      data: exportData,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const importAccounts = async (req, res, next) => {
+  try {
+    const accounts = Array.isArray(req.body) ? req.body : [];
+    
+    if (accounts.length === 0) {
+      return next(new AppError('Aucun compte à importer', 400));
+    }
+
+    const imported = [];
+    for (const acc of accounts) {
+      const strength = evaluatePasswordStrength(acc.password);
+      const { encrypted, iv } = encrypt(acc.password);
+
+      const account = await Account.create({
+        userId: req.user._id,
+        serviceName: acc.serviceName,
+        username: acc.username,
+        encryptedPassword: encrypted,
+        iv,
+        url: acc.url || '',
+        category: acc.category || 'other',
+        notes: acc.notes || '',
+        isFavorite: acc.isFavorite || false,
+        passwordStrength: { score: strength.score, label: strength.label },
+        lastPasswordChange: new Date(),
+      });
+      imported.push(account);
+    }
+
+    const clientInfo = getClientInfo(req);
+    await createSecurityLog({
+      userId: req.user._id,
+      action: 'data-imported',
+      ...clientInfo,
+      details: `${imported.length} compte(s) importé(s)`,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: `${imported.length} compte(s) importé(s)`,
+      data: { imported },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getAccountStats = async (req, res, next) => {
+  try {
+    const accounts = await Account.find({ userId: req.user._id });
+    
+    const strongPasswords = accounts.filter(a => a.passwordStrength?.score >= 3).length;
+    const weakPasswords = accounts.filter(a => a.passwordStrength?.score < 2).length;
+    const outdatedPasswords = accounts.filter(a => {
+      const monthsOld = (Date.now() - a.lastPasswordChange) / (1000 * 60 * 60 * 24 * 30);
+      return monthsOld > 3;
+    }).length;
+    
+    const securityScore = accounts.length === 0 ? 0 : Math.round(
+      ((strongPasswords * 100) / accounts.length) * 0.6 +
+      (weakPasswords === 0 ? 100 : 50) * 0.4
+    );
+
+    res.json({
+      success: true,
+      data: {
+        totalAccounts: accounts.length,
+        strongPasswords,
+        weakPasswords,
+        outdatedPasswords,
+        securityScore,
+        twoFactorEnabled: req.user.twoFactorEnabled || false,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAccounts,
   getAccount,
   createAccount,
   updateAccount,
   deleteAccount,
+  exportAccounts,
+  importAccounts,
+  getAccountStats,
 };

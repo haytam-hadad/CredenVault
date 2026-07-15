@@ -18,7 +18,7 @@ const generatePasswordSchema = z.object({
 
 const notificationIdSchema = z.object({
   params: z.object({
-    id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'ID invalide'),
+    id: z.string().trim().regex(/^[0-9a-fA-F]{24}$/, 'ID invalide'),
   }),
 });
 

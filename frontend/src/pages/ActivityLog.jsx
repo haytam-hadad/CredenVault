@@ -15,7 +15,7 @@ export default function ActivityLog() {
   const loadActivities = async () => {
     try {
       const res = await securityService.getActivityLog();
-      setActivities(res.data || []);
+      setActivities(res.data?.logs || res.data || []);
     } catch (error) {
       console.error('Failed to load activities:', error);
     } finally {

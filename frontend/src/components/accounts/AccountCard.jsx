@@ -1,7 +1,7 @@
 import { ExternalLink, Star, Trash2, Edit, Shield, ShieldAlert, Lock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { STRENGTH_LABELS, CATEGORY_LABELS, formatDate } from '../../utils/helpers';
 
-export default function AccountCard({ account, onEdit, onDelete }) {
+export default function AccountCard({ account, onEdit, onDelete, onToggleFavorite }) {
   const isWeak = account.passwordStrength?.score <= 1;
   const strengthScore = account.passwordStrength?.score;
   const getStrengthColor = (score) => {
@@ -36,10 +36,19 @@ export default function AccountCard({ account, onEdit, onDelete }) {
         </div>
 
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {onToggleFavorite && (
+            <button
+              onClick={() => onToggleFavorite(account)}
+              className="p-2 text-slate-400 hover:text-yellow-400 hover:bg-slate-800 rounded-lg transition-smooth"
+              title={account.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+            >
+              <Star className={`w-4 h-4 ${account.isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+            </button>
+          )}
           {onEdit && (
             <button
               onClick={() => onEdit(account)}
-              className="p-2 text-slate-400 hover:text-brand-400 hover:bg-slate-800 rounded-lg"
+              className="p-2 text-slate-400 hover:text-brand-400 hover:bg-slate-800 rounded-lg transition-smooth"
             >
               <Edit className="w-4 h-4" />
             </button>
@@ -47,7 +56,7 @@ export default function AccountCard({ account, onEdit, onDelete }) {
           {onDelete && (
             <button
               onClick={() => onDelete(account)}
-              className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg"
+              className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-smooth"
             >
               <Trash2 className="w-4 h-4" />
             </button>

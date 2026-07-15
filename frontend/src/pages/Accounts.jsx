@@ -80,14 +80,28 @@ export default function Accounts() {
     try {
       const res = await accountService.getOne(account._id);
       setEditing({
+        _id: account._id,
         serviceName: res.data.account.serviceName,
         username: res.data.account.username,
         password: res.data.account.password,
         url: res.data.account.url || '',
         category: res.data.account.category,
         notes: res.data.account.notes || '',
+        isFavorite: res.data.account.isFavorite || false,
       });
       setModalOpen(true);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleToggleFavorite = async (account) => {
+    try {
+      await accountService.update(account._id, {
+        isFavorite: !account.isFavorite,
+      });
+      toast.success(account.isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris');
+      loadAccounts();
     } catch (error) {
       toast.error(error.message);
     }
@@ -174,6 +188,7 @@ export default function Accounts() {
                 account={account}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onToggleFavorite={handleToggleFavorite}
               />
             ))}
           </div>

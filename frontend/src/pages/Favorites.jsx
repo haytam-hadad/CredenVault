@@ -15,10 +15,15 @@ export default function Favorites() {
 
   const loadFavorites = async () => {
     try {
-      const res = await accountService.getFavorites();
-      setFavorites(res.data || []);
+      const res = await accountService.getAll({ isFavorite: true });
+      const favoriteAccounts = res.accounts || res.data?.accounts || res.data || [];
+      const filtered = Array.isArray(favoriteAccounts) 
+        ? favoriteAccounts.filter(acc => acc.isFavorite) 
+        : [];
+      setFavorites(filtered);
     } catch (error) {
       console.error('Failed to load favorites:', error);
+      toast.error('Failed to load favorites');
     } finally {
       setLoading(false);
     }
@@ -26,17 +31,22 @@ export default function Favorites() {
 
   const removeFavorite = async (id) => {
     try {
-      await accountService.toggleFavorite(id, false);
-      setFavorites(favorites.filter(f => f.id !== id));
+      await accountService.update(id, { isFavorite: false });
+      setFavorites(favorites.filter(f => f._id !== id));
       toast.success('Removed from favorites');
     } catch (error) {
       toast.error('Failed to remove favorite');
     }
   };
 
-  const copyPassword = (password) => {
-    navigator.clipboard.writeText(password);
-    toast.success('Password copied!');
+  const copyPassword = async (account) => {
+    try {
+      const res = await accountService.getOne(account._id);
+      navigator.clipboard.writeText(res.account.password);
+      toast.success('Password copied!');
+    } catch (error) {
+      toast.error('Failed to copy password');
+    }
   };
 
   const toggleShowPassword = (id) => {
@@ -64,17 +74,17 @@ export default function Favorites() {
       </div>
 
       {favorites.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-stagger">
           {favorites.map((account) => (
-            <Card key={account.id} className="hover:border-brand-500/50 transition-colors">
+            <Card key={account._id} className="hover:border-brand-500/50 transition-colors">
               <div className="space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-lg font-bold text-slate-100 dark:text-slate-100 light:text-slate-900">
-                      {account.accountName}
+                      {account.serviceName}
                     </h3>
                     <p className="text-sm text-slate-400 dark:text-slate-400 light:text-slate-600">
-                      {account.email || account.username}
+                      {account.username}
                     </p>
                   </div>
                   <Heart className="w-5 h-5 text-red-400 flex-shrink-0 fill-current" />
@@ -83,10 +93,10 @@ export default function Favorites() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between p-2 bg-slate-800 dark:bg-slate-800 light:bg-slate-200 rounded-lg">
                     <span className="text-xs text-slate-500 dark:text-slate-500 light:text-slate-600">
-                      {showPassword[account.id] ? account.password : '•'.repeat(8)}
+                      {showPassword[account._id] ? '••••••••' : '••••••••'}
                     </span>
                     <button
-                      onClick={() => toggleShowPassword(account.id)}
+                      onClick={() => toggleShowPassword(account._id)}
                       className="text-slate-400 hover:text-slate-100 transition-colors"
                     >
                       <Eye className="w-4 h-4" />
@@ -94,31 +104,32 @@ export default function Favorites() {
                   </div>
 
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => copyPassword(account.password)}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-brand-600 hover:bg-brand-700 text-slate-100 rounded-lg transition-colors text-sm font-medium"
+                    <Button
+                      onClick={() => copyPassword(account)}
+                      className="flex-1"
                     >
                       <Copy className="w-4 h-4" />
                       Copier
-                    </button>
-                    <button
-                      onClick={() => removeFavorite(account.id)}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors text-sm font-medium"
+                    </Button>
+                    <Button
+                      variant="danger"
+                      onClick={() => removeFavorite(account._id)}
+                      className="flex-1"
                     >
                       <Trash2 className="w-4 h-4" />
                       Retirer
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
-                {account.website && (
+                {account.url && (
                   <a
-                    href={account.website}
+                    href={account.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-brand-400 hover:text-brand-300 transition-colors block truncate"
                   >
-                    {account.website}
+                    {account.url}
                   </a>
                 )}
               </div>

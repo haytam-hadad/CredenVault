@@ -26,7 +26,7 @@ const updateAccountBodySchema = z.object({
 });
 
 const idParamsSchema = z.object({
-  id: z.string().regex(/^[0-9a-fA-F]{24}$/, 'ID invalide'),
+  id: z.string().trim().regex(/^[0-9a-fA-F]{24}$/, 'ID invalide'),
 });
 
 const createAccountSchema = z.object({
