@@ -84,12 +84,14 @@ export default function Register() {
                 value={form.firstName}
                 onChange={handleChange}
                 error={errors.firstName}
+                placeholder="Votre prénom"
               />
               <Input
                 label="Nom"
                 name="lastName"
                 value={form.lastName}
                 onChange={handleChange}
+                placeholder="Votre nom"
               />
             </div>
 
@@ -101,6 +103,7 @@ export default function Register() {
               value={form.email}
               onChange={handleChange}
               error={errors.email}
+              placeholder="vous@exemple.com"
               autoComplete="email"
             />
 
@@ -113,6 +116,7 @@ export default function Register() {
                 value={form.password}
                 onChange={handleChange}
                 error={errors.password}
+                placeholder="Min. 8 caractères, 1 majuscule, 1 chiffre"
                 autoComplete="new-password"
               />
               <PasswordStrength strength={strength} />
@@ -126,6 +130,7 @@ export default function Register() {
               value={form.confirmPassword}
               onChange={handleChange}
               error={errors.confirmPassword}
+              placeholder="Retapez votre mot de passe"
               autoComplete="new-password"
             />
 

@@ -153,12 +153,14 @@ export default function Settings() {
               icon={User}
               value={profile.firstName}
               onChange={(e) => setProfile((p) => ({ ...p, firstName: e.target.value }))}
+              placeholder="Votre prénom"
             />
             <Input
               label="Nom"
               name="lastName"
               value={profile.lastName}
               onChange={(e) => setProfile((p) => ({ ...p, lastName: e.target.value }))}
+              placeholder="Votre nom"
             />
           </div>
           <Input
@@ -167,6 +169,7 @@ export default function Settings() {
             type="email"
             value={profile.email}
             onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))}
+            placeholder="vous@exemple.com"
           />
           <Button type="submit" loading={loading.profile}>Enregistrer</Button>
         </form>
@@ -180,6 +183,8 @@ export default function Settings() {
             icon={Lock}
             value={passwordForm.currentPassword}
             onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))}
+            placeholder="Votre mot de passe actuel"
+            autoComplete="current-password"
           />
           <div className="space-y-1.5">
             <Input
@@ -188,6 +193,8 @@ export default function Settings() {
               icon={Lock}
               value={passwordForm.newPassword}
               onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))}
+              placeholder="Min. 8 caractères, 1 majuscule, 1 chiffre"
+              autoComplete="new-password"
             />
             <PasswordStrength strength={strength} />
           </div>
@@ -197,6 +204,8 @@ export default function Settings() {
             icon={Lock}
             value={passwordForm.confirmPassword}
             onChange={(e) => setPasswordForm((p) => ({ ...p, confirmPassword: e.target.value }))}
+            placeholder="Retapez le nouveau mot de passe"
+            autoComplete="new-password"
           />
           <Button type="submit" loading={loading.password}>Changer le mot de passe</Button>
         </form>

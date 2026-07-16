@@ -22,7 +22,16 @@ api.interceptors.response.use(
       error.message ||
       'Une erreur est survenue';
 
-    if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
+    // Endpoints that legitimately return 401 for a wrong *submitted* credential
+    // (not an expired session). These must NOT trigger an auto-logout/redirect,
+    // otherwise a wrong current password on the change-password form would log
+    // the user out instead of showing the error.
+    const credentialCheckEndpoints = ['/auth/login', '/users/password', '/auth/2fa/disable'];
+    const isCredentialCheck = credentialCheckEndpoints.some((path) =>
+      error.config?.url?.includes(path)
+    );
+
+    if (error.response?.status === 401 && !isCredentialCheck) {
       sessionStorage.removeItem('token');
       if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
         window.location.href = '/login';
