@@ -62,7 +62,7 @@ export default function Login() {
                     autoComplete="email"
                   />
                   {form.email && !errors.email && (
-                    <p className="text-xs text-emerald-400 dark:text-emerald-400 light:text-emerald-600 flex items-center gap-1">
+                    <p className="text-xs text-emerald-400 flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" /> Email valide
                     </p>
                   )}
@@ -82,7 +82,7 @@ export default function Login() {
                     autoComplete="current-password"
                   />
                   {form.password && !errors.password && (
-                    <p className="text-xs text-slate-500 dark:text-slate-500 light:text-slate-600">
+                    <p className="text-xs text-slate-500 ">
                       {form.password.length < 8
                         ? `${8 - form.password.length} caractères requis`
                         : '✓ Mot de passe fort'}
@@ -93,11 +93,11 @@ export default function Login() {
             ) : (
               <>
                 {/* 2FA Status */}
-                <div className="p-4 bg-emerald-600/10 dark:bg-emerald-600/10 light:bg-emerald-600/5 border border-emerald-600/30 dark:border-emerald-600/30 light:border-emerald-600/50 rounded-xl">
-                  <p className="text-sm text-slate-300 dark:text-slate-300 light:text-slate-700">
+                <div className="p-4 bg-emerald-600/10 border border-emerald-600/30 rounded-xl">
+                  <p className="text-sm text-slate-300 ">
                     Authentification à deux facteurs activée pour:
                   </p>
-                  <p className="text-slate-100 dark:text-slate-100 light:text-slate-900 font-semibold mt-2 break-all">
+                  <p className="text-slate-100 font-semibold mt-2 break-all">
                     {pendingEmail}
                   </p>
                 </div>
@@ -121,7 +121,7 @@ export default function Login() {
                     autoComplete="one-time-code"
                   />
                   {form.otpToken.length > 0 && (
-                    <p className="text-xs text-slate-400 dark:text-slate-400 light:text-slate-600">
+                    <p className="text-xs text-slate-400 ">
                       {form.otpToken.length}/6 caractères
                     </p>
                   )}
@@ -142,32 +142,32 @@ export default function Login() {
             </Button>
 
             {/* Security Features */}
-            <div className="mt-6 pt-6 border-t border-slate-700 dark:border-slate-700 light:border-slate-300 space-y-2">
-              <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-400 light:text-slate-600">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-400 light:text-emerald-600 flex-shrink-0" />
+            <div className="mt-6 pt-6 border-t border-slate-700 space-y-2">
+              <div className="flex items-center gap-2 text-xs text-slate-400 ">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                 <span>Chiffrement AES-256</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-400 light:text-slate-600">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-400 light:text-emerald-600 flex-shrink-0" />
+              <div className="flex items-center gap-2 text-xs text-slate-400 ">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                 <span>HTTPS sécurisé</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-400 light:text-slate-600">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-400 light:text-emerald-600 flex-shrink-0" />
+              <div className="flex items-center gap-2 text-xs text-slate-400 ">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                 <span>Authentification 2FA</span>
               </div>
             </div>
 
             {/* Footer Link */}
-            <p className="text-center text-sm text-slate-500 dark:text-slate-500 light:text-slate-600 mt-6">
+            <p className="text-center text-sm text-slate-500 mt-6">
               Pas encore de compte ?{' '}
-              <Link to="/register" className="text-brand-400 dark:text-brand-400 light:text-brand-600 hover:text-brand-300 dark:hover:text-brand-300 light:hover:text-brand-700 font-semibold transition-colors">
+              <Link to="/register" className="text-brand-400 hover:text-brand-300 font-semibold transition-colors">
                 S'inscrire
               </Link>
             </p>
 
             {/* Trust Badge */}
             <div className="mt-4 text-center">
-              <p className="text-xs text-slate-600 dark:text-slate-600 light:text-slate-500">
+              <p className="text-xs text-slate-600 ">
                 🔒 Vos données sont sécurisées avec CredenVault
               </p>
             </div>
@@ -175,3 +175,4 @@ export default function Login() {
     </AuthLayout>
   );
 }
+

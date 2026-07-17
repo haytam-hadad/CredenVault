@@ -93,9 +93,14 @@ export default function AccountCard({ account, onEdit, onDelete, onToggleFavorit
           </a>
         )}
 
-        <p className="text-xs text-slate-500">
-          Modifié le {formatDate(account.updatedAt)}
-        </p>
+        <div className="space-y-1 pt-2 border-t border-slate-800/50">
+          <p className="text-xs text-slate-500">
+            Créé le {formatDate(account.createdAt)}
+          </p>
+          <p className="text-xs text-slate-500">
+            Modifié le {formatDate(account.updatedAt)}
+          </p>
+        </div>
       </div>
     </div>
   );

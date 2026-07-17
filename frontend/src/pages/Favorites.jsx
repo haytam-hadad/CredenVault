@@ -64,11 +64,11 @@ export default function Favorites() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100 dark:text-slate-100 light:text-slate-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
           <Heart className="w-6 h-6 text-red-400" />
           Favoris
         </h1>
-        <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 mt-1">
+        <p className="text-slate-400 mt-1">
           Accès rapide à vos comptes importants
         </p>
       </div>
@@ -80,10 +80,10 @@ export default function Favorites() {
               <div className="space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-lg font-bold text-slate-100 dark:text-slate-100 light:text-slate-900">
+                    <h3 className="text-lg font-bold text-slate-100 ">
                       {account.serviceName}
                     </h3>
-                    <p className="text-sm text-slate-400 dark:text-slate-400 light:text-slate-600">
+                    <p className="text-sm text-slate-400 ">
                       {account.username}
                     </p>
                   </div>
@@ -91,8 +91,8 @@ export default function Favorites() {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2 bg-slate-800 dark:bg-slate-800 light:bg-slate-200 rounded-lg">
-                    <span className="text-xs text-slate-500 dark:text-slate-500 light:text-slate-600">
+                  <div className="flex items-center justify-between p-2 bg-slate-800 rounded-lg">
+                    <span className="text-xs text-slate-500 ">
                       {showPassword[account._id] ? '••••••••' : '••••••••'}
                     </span>
                     <button
@@ -140,10 +140,10 @@ export default function Favorites() {
         <Card>
           <div className="text-center py-12">
             <Star className="w-12 h-12 text-slate-700 mx-auto mb-3 opacity-50" />
-            <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 mb-2">
+            <p className="text-slate-400 mb-2">
               Aucun favori enregistré
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-500 light:text-slate-600">
+            <p className="text-xs text-slate-500 ">
               Marquez vos comptes importants comme favoris pour un accès rapide
             </p>
           </div>
@@ -152,3 +152,4 @@ export default function Favorites() {
     </div>
   );
 }
+

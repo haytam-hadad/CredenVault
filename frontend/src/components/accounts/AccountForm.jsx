@@ -92,7 +92,7 @@ export default function AccountForm({ initial, onSubmit, onCancel, loading }) {
       />
 
       <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-slate-300 dark:text-slate-300 light:text-slate-700">Mot de passe</label>
+        <label className="block text-sm font-medium text-slate-300">Mot de passe</label>
         <div className="flex gap-2">
           <div className="relative flex-1">
             <input
@@ -100,13 +100,13 @@ export default function AccountForm({ initial, onSubmit, onCancel, loading }) {
               name="password"
               value={form.password}
               onChange={handleChange}
-              className={`input-field pr-10 bg-slate-800 dark:bg-slate-800 light:bg-slate-50 border-slate-700 dark:border-slate-700 light:border-slate-300 text-slate-100 dark:text-slate-100 light:text-slate-900 placeholder-slate-500 dark:placeholder-slate-500 light:placeholder-slate-600 transition-all duration-200 ${errors.password ? 'border-red-500 dark:border-red-500 light:border-red-400 focus:ring-red-500/50 dark:focus:ring-red-500/50 light:focus:ring-red-400/50' : ''}`}
+              className={`input-field pr-10 bg-slate-800 border-slate-700 text-slate-100 placeholder-slate-500 transition-all duration-200 ${errors.password ? 'border-red-500 focus:ring-red-500/50' : ''}`}
               placeholder="••••••••"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-500 light:text-slate-600 hover:text-slate-300 dark:hover:text-slate-300 light:hover:text-slate-700 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -115,7 +115,7 @@ export default function AccountForm({ initial, onSubmit, onCancel, loading }) {
             <RefreshCw className="w-4 h-4" />
           </Button>
         </div>
-        {errors.password && <p className="text-sm text-red-400 dark:text-red-400 light:text-red-500">{errors.password}</p>}
+        {errors.password && <p className="text-sm text-red-400">{errors.password}</p>}
         <PasswordStrength strength={strength} />
       </div>
 
@@ -128,12 +128,12 @@ export default function AccountForm({ initial, onSubmit, onCancel, loading }) {
       />
 
       <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-slate-300 dark:text-slate-300 light:text-slate-700">Catégorie</label>
+        <label className="block text-sm font-medium text-slate-300">Catégorie</label>
         <select
           name="category"
           value={form.category}
           onChange={handleChange}
-          className="input-field bg-slate-800 dark:bg-slate-800 light:bg-slate-50 border-slate-700 dark:border-slate-700 light:border-slate-300 text-slate-100 dark:text-slate-100 light:text-slate-900 transition-all duration-200"
+          className="input-field bg-slate-800 border-slate-700 text-slate-100 transition-all duration-200"
         >
           {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
             <option key={key} value={key}>{label}</option>
@@ -142,13 +142,13 @@ export default function AccountForm({ initial, onSubmit, onCancel, loading }) {
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-slate-300 dark:text-slate-300 light:text-slate-700">Notes (optionnel)</label>
+        <label className="block text-sm font-medium text-slate-300">Notes (optionnel)</label>
         <textarea
           name="notes"
           value={form.notes}
           onChange={handleChange}
           rows={2}
-          className="input-field bg-slate-800 dark:bg-slate-800 light:bg-slate-50 border-slate-700 dark:border-slate-700 light:border-slate-300 text-slate-100 dark:text-slate-100 light:text-slate-900 placeholder-slate-500 dark:placeholder-slate-500 light:placeholder-slate-600 resize-none transition-all duration-200"
+          className="input-field bg-slate-800 border-slate-700 text-slate-100 placeholder-slate-500 resize-none transition-all duration-200"
           placeholder="Informations supplémentaires..."
         />
       </div>

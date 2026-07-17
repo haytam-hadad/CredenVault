@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { User, Lock, Shield, Bell, AlertTriangle, CheckCircle2, QrCode, Copy } from 'lucide-react';
+import { User, Lock, Shield, Bell, AlertTriangle, CheckCircle2, QrCode, Copy, Clock, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card, Button, Input, Modal } from '../components/ui';
 import PasswordStrength from '../components/accounts/PasswordStrength';
 import useAuthStore from '../store/authStore';
 import { userService, authService, securityService } from '../services';
-import { validatePassword } from '../utils/helpers';
+import { validatePassword, formatDate } from '../utils/helpers';
 
 export default function Settings() {
   const { user, updateUser } = useAuthStore();
@@ -22,6 +22,7 @@ export default function Settings() {
   const [twoFAData, setTwoFAData] = useState(null);
   const [otpToken, setOtpToken] = useState('');
   const [disableForm, setDisableForm] = useState({ password: '', token: '' });
+  const [accountInfo, setAccountInfo] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -30,6 +31,7 @@ export default function Settings() {
         lastName: user.lastName || '',
         email: user.email || '',
       });
+      setAccountInfo(user);
     }
   }, [user]);
 
@@ -267,39 +269,83 @@ export default function Settings() {
         )}
       </Card>
 
+      {accountInfo && (
+        <Card title="Informations du compte" subtitle="Données de votre compte" className="border-l-4 border-l-blue-500">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-3 bg-slate-800/50 rounded-lg">
+              <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+                <Calendar className="w-3.5 h-3.5" />
+                Membre depuis
+              </div>
+              <p className="text-slate-100 font-medium">{formatDate(accountInfo.createdAt)}</p>
+            </div>
+            <div className="p-3 bg-slate-800/50 rounded-lg">
+              <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
+                <Clock className="w-3.5 h-3.5" />
+                Dernière connexion
+              </div>
+              <p className="text-slate-100 font-medium">{accountInfo.lastLogin ? formatDate(accountInfo.lastLogin) : 'Première connexion'}</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {settings && (
-        <Card title="Notifications" subtitle="Préférences d'alertes">
-          <div className="space-y-4">
-            {[
-              { key: 'emailNotificationsEnabled', label: 'Notifications par email', icon: Bell },
-              { key: 'loginAlertsEnabled', label: 'Alertes de connexion', icon: Shield },
-            ].map(({ key, label, icon: Icon }) => (
-              <label key={key} className="flex items-center justify-between cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <Icon className="w-4 h-4 text-slate-500" />
-                  <span className="text-sm text-slate-300">{label}</span>
-                </div>
+        <Card title="Paramètres de sécurité" subtitle="Notification et politique de session">
+          <div className="space-y-5">
+            <div className="space-y-4">
+              {[
+                { key: 'emailNotificationsEnabled', label: 'Notifications par email', icon: Bell },
+                { key: 'loginAlertsEnabled', label: 'Alertes de connexion', icon: Shield },
+                { key: 'requireTwoFactorForSensitiveActions', label: 'Exiger 2FA pour les actions sensibles', icon: Shield },
+              ].map(({ key, label, icon: Icon }) => (
+                <label key={key} className="flex items-center justify-between cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <Icon className="w-4 h-4 text-slate-500" />
+                    <span className="text-sm text-slate-300">{label}</span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings[key]}
+                    onChange={(e) => handleSettingsChange(key, e.target.checked)}
+                    className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-brand-600 focus:ring-brand-500"
+                  />
+                </label>
+              ))}
+            </div>
+
+            <div className="border-t border-slate-700 pt-4 space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-sm text-slate-300">
+                  Rappel de renouvellement (jours) : <span className="text-brand-400 font-semibold">{settings.passwordRenewalReminderDays}</span>
+                </label>
                 <input
-                  type="checkbox"
-                  checked={settings[key]}
-                  onChange={(e) => handleSettingsChange(key, e.target.checked)}
-                  className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-brand-600 focus:ring-brand-500"
+                  type="range"
+                  min={30}
+                  max={365}
+                  step={30}
+                  value={settings.passwordRenewalReminderDays}
+                  onChange={(e) => handleSettingsChange('passwordRenewalReminderDays', Number(e.target.value))}
+                  className="w-full accent-brand-500"
                 />
-              </label>
-            ))}
-            <div className="space-y-1.5">
-              <label className="text-sm text-slate-300">
-                Rappel de renouvellement (jours) : {settings.passwordRenewalReminderDays}
-              </label>
-              <input
-                type="range"
-                min={30}
-                max={365}
-                step={30}
-                value={settings.passwordRenewalReminderDays}
-                onChange={(e) => handleSettingsChange('passwordRenewalReminderDays', Number(e.target.value))}
-                className="w-full accent-brand-500"
-              />
+                <p className="text-xs text-slate-500">Renouveler les mots de passe tous les {settings.passwordRenewalReminderDays} jours</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm text-slate-300">
+                  Délai d'inactivité (minutes) : <span className="text-brand-400 font-semibold">{settings.sessionTimeoutMinutes}</span>
+                </label>
+                <input
+                  type="range"
+                  min={15}
+                  max={1440}
+                  step={15}
+                  value={settings.sessionTimeoutMinutes}
+                  onChange={(e) => handleSettingsChange('sessionTimeoutMinutes', Number(e.target.value))}
+                  className="w-full accent-brand-500"
+                />
+                <p className="text-xs text-slate-500">Déconnecter après {settings.sessionTimeoutMinutes} minutes d'inactivité</p>
+              </div>
             </div>
           </div>
         </Card>
@@ -320,14 +366,14 @@ export default function Settings() {
             <div className="bg-slate-800/50 rounded-xl p-6 flex flex-col items-center border border-slate-700">
               <p className="text-xs text-slate-500 mb-3 font-medium">QR Code</p>
               <img src={twoFAData.qrCode} alt="QR Code 2FA" className="rounded-lg border-2 border-brand-500/30" />
-              <p className="text-xs text-slate-400 mt-3">
+              <p className="text-xs text-slate-100 mt-3">
                 Scannez ce code avec votre app authenticateur
               </p>
             </div>
 
             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
-              <p className="text-xs text-slate-500 mb-2">Clé secrète (si le scan ne fonctionne pas)</p>
-              <div className="flex items-center gap-2 p-2 bg-slate-900 rounded font-mono text-xs text-slate-300 break-all">
+              <p className="text-xs text-slate-500 mb-2">🔐 Clé secrète (si le scan ne fonctionne pas)</p>
+              <div className="flex items-center gap-2 p-2 bg-slate-900 rounded font-mono text-xs text-slate-100 break-all">
                 {twoFAData.secret}
                 <button 
                   onClick={() => {
@@ -367,3 +413,4 @@ export default function Settings() {
     </div>
   );
 }
+

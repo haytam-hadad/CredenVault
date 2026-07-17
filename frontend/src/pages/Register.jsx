@@ -139,32 +139,32 @@ export default function Register() {
         </Button>
 
         {/* Security Features */}
-        <div className="mt-6 pt-6 border-t border-slate-700 dark:border-slate-700 light:border-slate-300 space-y-2">
-          <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-400 light:text-slate-600">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-400 light:text-emerald-600 flex-shrink-0" />
+        <div className="mt-6 pt-6 border-t border-slate-700 space-y-2">
+          <div className="flex items-center gap-2 text-xs text-slate-400 ">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
             <span>Chiffrement AES-256</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-400 light:text-slate-600">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-400 light:text-emerald-600 flex-shrink-0" />
+          <div className="flex items-center gap-2 text-xs text-slate-400 ">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
             <span>Stockage sécurisé</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-400 light:text-slate-600">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-400 light:text-emerald-600 flex-shrink-0" />
+          <div className="flex items-center gap-2 text-xs text-slate-400 ">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
             <span>2FA disponible</span>
           </div>
         </div>
 
         {/* Footer Link */}
-        <p className="text-center text-sm text-slate-500 dark:text-slate-500 light:text-slate-600 mt-6">
+        <p className="text-center text-sm text-slate-500 mt-6">
           Déjà un compte ?{' '}
-          <Link to="/login" className="text-brand-400 dark:text-brand-400 light:text-brand-600 hover:text-brand-300 dark:hover:text-brand-300 light:hover:text-brand-700 font-semibold transition-colors">
+          <Link to="/login" className="text-brand-400 hover:text-brand-300 font-semibold transition-colors">
             Se connecter
           </Link>
         </p>
 
         {/* Trust Badge */}
         <div className="mt-4 text-center">
-          <p className="text-xs text-slate-600 dark:text-slate-600 light:text-slate-500">
+          <p className="text-xs text-slate-600 ">
             🔒 Votre compte est protégé dès sa création
           </p>
         </div>
@@ -172,3 +172,4 @@ export default function Register() {
     </AuthLayout>
   );
 }
+

@@ -21,6 +21,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [recentAccounts, setRecentAccounts] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
+  const [categoryBreakdown, setCategoryBreakdown] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,6 +33,7 @@ export default function Dashboard() {
           accountService.getStats(),
         ]);
         setStats(statsRes.data || dashRes.data.stats);
+        setCategoryBreakdown(dashRes.data.stats?.categoryBreakdown || null);
         setRecentActivity(dashRes.data.recentActivity || []);
         setRecentAccounts(accountsRes.data.accounts?.slice(0, 4) || []);
       } catch {
@@ -82,8 +84,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100 dark:text-slate-100 light:text-slate-900">Tableau de bord</h1>
-        <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 mt-1">Vue d'ensemble de votre sécurité numérique</p>
+        <h1 className="text-2xl font-bold text-slate-100">Tableau de bord</h1>
+        <p className="text-slate-400 mt-1">Vue d'ensemble de votre sécurité numérique</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -94,8 +96,8 @@ export default function Dashboard() {
                 <Icon className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <p className="text-2xl font-bold text-slate-100 dark:text-slate-100 light:text-slate-900">{value}</p>
-                <p className="text-sm text-slate-400 dark:text-slate-400 light:text-slate-600">{label}</p>
+                <p className="text-2xl font-bold text-slate-100">{value}</p>
+                <p className="text-sm text-slate-400">{label}</p>
               </div>
             </div>
           </Card>
@@ -141,8 +143,8 @@ export default function Dashboard() {
           >
             {recentAccounts.length === 0 ? (
               <div className="text-center py-8">
-                <KeyRound className="w-12 h-12 text-slate-700 dark:text-slate-700 light:text-slate-400 mx-auto mb-3" />
-                <p className="text-slate-500 dark:text-slate-500 light:text-slate-600">Aucun compte enregistré</p>
+                <KeyRound className="w-12 h-12 text-slate-700 mx-auto mb-3" />
+                <p className="text-slate-500">Aucun compte enregistré</p>
                 <Link to="/accounts" className="text-brand-400 text-sm mt-2 inline-block">
                   Ajouter votre premier compte
                 </Link>
@@ -164,12 +166,12 @@ export default function Dashboard() {
             className="border-l-4 border-l-emerald-500"
           >
             <div className="space-y-4">
-              <div className="flex items-center gap-3 p-3 bg-slate-800/50 dark:bg-slate-800/50 light:bg-slate-200/50 rounded-lg">
+              <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
                 <TrendingUp className="w-4 h-4 text-brand-400 shrink-0" />
                 <div className="flex-1 text-sm">
-                  <span className="text-slate-400 dark:text-slate-400 light:text-slate-600">Score de sécurité</span>
+                  <span className="text-slate-400">Score de sécurité</span>
                   <div className="mt-1 flex items-center justify-between">
-                    <span className="font-semibold text-slate-100 dark:text-slate-100 light:text-slate-900">{stats?.securityScore || 0}%</span>
+                    <span className="font-semibold text-slate-100">{stats?.securityScore || 0}%</span>
                     <span className="text-xs px-2 py-1 rounded bg-slate-700 text-slate-300">
                       {(stats?.securityScore || 0) >= 80 ? '🟢 Excellent' : (stats?.securityScore || 0) >= 60 ? '🟡 Bon' : '🔴 À améliorer'}
                     </span>
@@ -210,6 +212,41 @@ export default function Dashboard() {
             </div>
           </Card>
 
+          {/* Category Breakdown */}
+          {categoryBreakdown && Object.keys(categoryBreakdown).length > 0 && (
+            <Card title="Répartition des comptes" className="border-l-4 border-l-blue-500">
+              <ul className="space-y-2.5">
+                {Object.entries(categoryBreakdown).map(([category, count]) => {
+                  const categoryLabels = {
+                    email: '📧 Email',
+                    social: '👥 Réseaux sociaux',
+                    finance: '💳 Finance',
+                    work: '💼 Travail',
+                    entertainment: '🎮 Divertissement',
+                    other: '📌 Autres',
+                  };
+                  const total = stats?.totalAccounts || 1;
+                  const percentage = Math.round((count / total) * 100);
+
+                  return (
+                    <div key={category}>
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="text-slate-300">{categoryLabels[category] || category}</span>
+                        <span className="text-slate-400">{count}</span>
+                      </div>
+                      <div className="w-full bg-slate-800 rounded-full h-1.5">
+                        <div
+                          className="h-1.5 rounded-full bg-gradient-to-r from-brand-500 to-brand-400"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </ul>
+            </Card>
+          )}
+
           <Card title="Recommandations de sécurité" className="border-l-4 border-l-orange-500">
             <ul className="space-y-2">
               {stats?.weakPasswords > 0 && (
@@ -241,7 +278,7 @@ export default function Dashboard() {
 
           <Card title="Activité récente" subtitle="Vos 5 dernières actions">
             {recentActivity.length === 0 ? (
-              <div className="text-center py-8 text-slate-500 dark:text-slate-500 light:text-slate-600">
+              <div className="text-center py-8 text-slate-500">
                 <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">Aucune activité enregistrée</p>
               </div>
@@ -251,8 +288,8 @@ export default function Dashboard() {
                   <li key={log._id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-800/40 transition-colors text-sm">
                     <div className="w-2 h-2 rounded-full bg-brand-400 mt-1.5 shrink-0 opacity-70" />
                     <div className="flex-1 min-w-0">
-                      <span className="text-slate-300 dark:text-slate-300 light:text-slate-700 truncate block">{log.action}</span>
-                      <span className="text-slate-600 dark:text-slate-600 light:text-slate-500 text-xs">
+                      <span className="text-slate-300 truncate block">{log.action}</span>
+                      <span className="text-slate-600 text-xs">
                         {formatDate(log.createdAt)}
                       </span>
                     </div>
@@ -267,3 +304,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

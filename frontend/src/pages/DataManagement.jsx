@@ -65,10 +65,10 @@ export default function DataManagement() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-slate-100 dark:text-slate-100 light:text-slate-900">
+        <h1 className="text-2xl font-bold text-slate-100 ">
           Gestion des Données
         </h1>
-        <p className="text-slate-400 dark:text-slate-400 light:text-slate-600 mt-1">
+        <p className="text-slate-400 mt-1">
           Exportez et importez vos données de manière sécurisée
         </p>
       </div>
@@ -88,12 +88,12 @@ export default function DataManagement() {
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-medium text-slate-300 dark:text-slate-300 light:text-slate-700">
+              <p className="text-sm font-medium text-slate-300 ">
                 Format de fichier
               </p>
-              <div className="flex items-center gap-2 p-3 bg-slate-800 dark:bg-slate-800 light:bg-slate-200 rounded-lg">
+              <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
                 <FileJson className="w-5 h-5 text-yellow-400" />
-                <span className="text-sm text-slate-400 dark:text-slate-400 light:text-slate-600">
+                <span className="text-sm text-slate-400 ">
                   JSON chiffré (.json)
                 </span>
               </div>
@@ -142,7 +142,7 @@ export default function DataManagement() {
               </Button>
             </div>
 
-            <p className="text-xs text-slate-500 dark:text-slate-500 light:text-slate-600 text-center">
+            <p className="text-xs text-slate-500 text-center">
               Formats acceptés: JSON
             </p>
           </div>
@@ -152,11 +152,11 @@ export default function DataManagement() {
       {/* Safety Tips */}
       <Card title="Conseils de Sécurité">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-slate-800 dark:bg-slate-800 light:bg-slate-200 rounded-lg">
-            <h4 className="text-sm font-medium text-slate-100 dark:text-slate-100 light:text-slate-900 mb-2">
+          <div className="p-4 bg-slate-800 rounded-lg">
+            <h4 className="text-sm font-medium text-slate-100 mb-2">
               📁 Où stocker votre sauvegarde
             </h4>
-            <ul className="text-xs text-slate-400 dark:text-slate-400 light:text-slate-600 space-y-1">
+            <ul className="text-xs text-slate-400 space-y-1">
               <li>✓ Stockage cloud privé (Google Drive, OneDrive)</li>
               <li>✓ Disque externe chiffré</li>
               <li>✓ Service cloud sécurisé</li>
@@ -164,11 +164,11 @@ export default function DataManagement() {
             </ul>
           </div>
 
-          <div className="p-4 bg-slate-800 dark:bg-slate-800 light:bg-slate-200 rounded-lg">
-            <h4 className="text-sm font-medium text-slate-100 dark:text-slate-100 light:text-slate-900 mb-2">
+          <div className="p-4 bg-slate-800 rounded-lg">
+            <h4 className="text-sm font-medium text-slate-100 mb-2">
               🔐 Meilleures pratiques
             </h4>
-            <ul className="text-xs text-slate-400 dark:text-slate-400 light:text-slate-600 space-y-1">
+            <ul className="text-xs text-slate-400 space-y-1">
               <li>✓ Créer des sauvegardes régulières</li>
               <li>✓ Tester l'importation sur un compte test</li>
               <li>✓ Protéger les fichiers par mot de passe</li>
@@ -180,3 +180,4 @@ export default function DataManagement() {
     </div>
   );
 }
+
