@@ -37,5 +37,5 @@ const decrypt = (encryptedData, ivHex) => {
 
   return decrypted;
 };
-
 module.exports = { encrypt, decrypt };
+

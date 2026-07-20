@@ -42,8 +42,32 @@ const accountIdSchema = z.object({
   params: idParamsSchema,
 });
 
+const importAccountItemSchema = z.object({
+  serviceName: z.string().trim().min(1, 'Nom du service requis'),
+  username: z.string().trim().min(1, 'Identifiant requis'),
+  password: z.string().min(1, 'Mot de passe requis'),
+  url: z.string().optional().or(z.literal('')),
+  category: z
+    .enum(['email', 'social', 'finance', 'work', 'entertainment', 'other'])
+    .optional(),
+  notes: z.string().optional(),
+  isFavorite: z.boolean().optional(),
+});
+
+const importAccountsSchema = z.object({
+  body: z.union([
+    z.array(importAccountItemSchema).min(1, 'Au moins un compte requis'),
+    z.object({
+      version: z.number().optional(),
+      exportedAt: z.string().optional(),
+      accounts: z.array(importAccountItemSchema).min(1, 'Au moins un compte requis'),
+    }),
+  ]),
+});
+
 module.exports = {
   createAccountSchema,
   updateAccountSchema,
   accountIdSchema,
+  importAccountsSchema,
 };

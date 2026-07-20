@@ -15,6 +15,7 @@ const {
   createAccountSchema,
   updateAccountSchema,
   accountIdSchema,
+  importAccountsSchema,
 } = require('../validators/accountValidator');
 
 const router = express.Router();
@@ -27,7 +28,7 @@ router.post('/', validate(createAccountSchema), createAccount);
 // Special routes - must be before :id
 router.get('/stats', getAccountStats);
 router.get('/export/all', exportAccounts);
-router.post('/import/bulk', importAccounts);
+router.post('/import/bulk', validate(importAccountsSchema), importAccounts);
 
 // ID-based routes - must be after special routes
 router.get('/:id', validate(accountIdSchema), getAccount);

@@ -186,9 +186,8 @@ const deleteAccount = async (req, res, next) => {
 const exportAccounts = async (req, res, next) => {
   try {
     const accounts = await Account.find({ userId: req.user._id });
-    
-    // Decrypt passwords for export
-    const exportData = accounts.map(acc => ({
+
+    const exportAccountsList = accounts.map((acc) => ({
       serviceName: acc.serviceName,
       username: acc.username,
       password: decrypt(acc.encryptedPassword, acc.iv),
@@ -208,8 +207,13 @@ const exportAccounts = async (req, res, next) => {
 
     res.json({
       success: true,
-      message: 'Export successful',
-      data: exportData,
+      message: 'Export réussi',
+      data: {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        accountCount: exportAccountsList.length,
+        accounts: exportAccountsList,
+      },
     });
   } catch (error) {
     next(error);
@@ -218,14 +222,28 @@ const exportAccounts = async (req, res, next) => {
 
 const importAccounts = async (req, res, next) => {
   try {
-    const accounts = Array.isArray(req.body) ? req.body : [];
-    
-    if (accounts.length === 0) {
+    const payload = req.body;
+    const accounts = Array.isArray(payload) ? payload : payload.accounts;
+
+    if (!accounts?.length) {
       return next(new AppError('Aucun compte à importer', 400));
     }
 
     const imported = [];
+    const skipped = [];
+
     for (const acc of accounts) {
+      const existing = await Account.findOne({
+        userId: req.user._id,
+        serviceName: acc.serviceName,
+        username: acc.username,
+      });
+
+      if (existing) {
+        skipped.push({ serviceName: acc.serviceName, username: acc.username });
+        continue;
+      }
+
       const strength = evaluatePasswordStrength(acc.password);
       const { encrypted, iv } = encrypt(acc.password);
 
@@ -250,13 +268,13 @@ const importAccounts = async (req, res, next) => {
       userId: req.user._id,
       action: 'data-imported',
       ...clientInfo,
-      details: `${imported.length} compte(s) importé(s)`,
+      details: `${imported.length} importé(s), ${skipped.length} ignoré(s)`,
     });
 
     res.status(201).json({
       success: true,
-      message: `${imported.length} compte(s) importé(s)`,
-      data: { imported },
+      message: `${imported.length} compte(s) importé(s)${skipped.length ? `, ${skipped.length} doublon(s) ignoré(s)` : ''}`,
+      data: { imported, skipped, importedCount: imported.length, skippedCount: skipped.length },
     });
   } catch (error) {
     next(error);

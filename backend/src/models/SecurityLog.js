@@ -22,6 +22,8 @@ const securityLogSchema = new mongoose.Schema(
         '2fa-disabled',
         '2fa-verified',
         'profile-updated',
+        'data-exported',
+        'data-imported',
       ],
     },
     ipAddress: {

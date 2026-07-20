@@ -17,11 +17,6 @@ import {
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 
-// Faint diagonal hairline pattern — evokes a vault/blueprint schematic
-// without competing with the content. Kept extremely low-opacity on purpose.
-const SECURITY_PATTERN =
-  'repeating-linear-gradient(135deg, rgba(14,165,233,0.05) 0px, rgba(14,165,233,0.05) 1px, transparent 1px, transparent 14px)';
-
 const links = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/accounts', icon: KeyRound, label: 'Comptes' },
@@ -71,10 +66,7 @@ export default function Sidebar({ open, onClose }) {
   const navContent = (
     <>
       <header className="relative flex items-center gap-2 bg-gradient-to-b from-brand-500/10 to-transparent px-4 py-6 border-b border-slate-800">
-        <div className="relative">
-          <img src="/logo.png" alt="Logo CredenVault" className="w-9 h-9 object-contain" />
-          <span className="absolute -inset-1.5 -z-10 rounded-full bg-brand-500/20 blur-md" aria-hidden="true" />
-        </div>
+        <img src="/logo.png" alt="Logo CredenVault" className="w-9 h-9 object-contain" />
         <div>
           <h1 className="text-lg font-bold text-slate-100 tracking-tight">CredenVault</h1>
           <div className="flex items-center gap-1.5 mt-0.5">
@@ -159,7 +151,6 @@ export default function Sidebar({ open, onClose }) {
 
       <aside
         aria-label="Barre latérale"
-        style={{ backgroundImage: SECURITY_PATTERN }}
         className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 shadow-[inset_-1px_0_0_0_rgba(14,165,233,0.08)] flex flex-col transform transition-transform lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
