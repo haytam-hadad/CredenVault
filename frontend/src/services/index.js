@@ -8,6 +8,8 @@ export const authService = {
   setup2FA: () => api.post('/auth/2fa/setup').then((r) => r.data),
   verify2FA: (token) => api.post('/auth/2fa/verify', { token }).then((r) => r.data),
   disable2FA: (data) => api.post('/auth/2fa/disable', data).then((r) => r.data),
+  verifyPassword: (password) =>
+    api.post('/auth/verify-password', { password }).then((r) => r.data),
 };
 
 export const userService = {
@@ -39,6 +41,9 @@ export const securityService = {
   getNotifications: (params) => api.get('/security/notifications', { params }).then((r) => r.data),
   markNotificationRead: (id) =>
     api.patch(`/security/notifications/${id}/read`).then((r) => r.data),
-  getLogs: () => api.get('/security/logs').then((r) => r.data),
   checkRenewals: () => api.post('/security/password-renewals/check').then((r) => r.data),
+  getUnreadCount: () => api.get('/security/notifications/unread-count').then((r) => r.data),
+  markAllNotificationsRead: () =>
+    api.patch('/security/notifications/read-all').then((r) => r.data),
+  generateReminders: () => api.post('/security/notifications/generate').then((r) => r.data),
 };

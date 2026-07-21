@@ -16,14 +16,14 @@ import { Card } from '../components/ui';
 import { securityService, accountService } from '../services';
 import AccountCard from '../components/accounts/AccountCard';
 import { formatDate } from '../utils/helpers';
-
+ 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [recentAccounts, setRecentAccounts] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [categoryBreakdown, setCategoryBreakdown] = useState(null);
   const [loading, setLoading] = useState(true);
-
+ 
   useEffect(() => {
     const load = async () => {
       try {
@@ -44,7 +44,7 @@ export default function Dashboard() {
     };
     load();
   }, []);
-
+ 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -52,7 +52,7 @@ export default function Dashboard() {
       </div>
     );
   }
-
+ 
   const statCards = [
     {
       label: 'Comptes enregistrés',
@@ -80,14 +80,14 @@ export default function Dashboard() {
       color: `${((stats?.weakPasswords || 0) + (stats?.outdatedPasswords || 0)) > 0 ? 'text-red-400 bg-red-600/20' : 'text-slate-400 bg-slate-600/20'}`,
     },
   ];
-
+ 
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-slate-100">Tableau de bord</h1>
         <p className="text-slate-400 mt-1">Vue d'ensemble de votre sécurité numérique</p>
       </div>
-
+ 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {statCards.map(({ label, value, icon: Icon, color }) => (
           <Card key={label} className="!p-4 border-l-4 border-l-brand-500 hover:border-l-brand-400 transition-colors">
@@ -103,7 +103,7 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
-
+ 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           {/* Security Status Summary */}
@@ -132,7 +132,7 @@ export default function Dashboard() {
               </div>
             )}
           </Card>
-
+ 
           <Card
             title="Comptes récents"
             action={
@@ -158,7 +158,7 @@ export default function Dashboard() {
             )}
           </Card>
         </div>
-
+ 
         <div className="space-y-4">
           <Card 
             title="Sécurité" 
@@ -178,7 +178,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-
+ 
               <div className="w-full bg-slate-800 rounded-full h-2.5">
                 <div
                   className={`h-2.5 rounded-full transition-all ${
@@ -187,7 +187,7 @@ export default function Dashboard() {
                   style={{ width: `${stats?.securityScore || 0}%` }}
                 />
               </div>
-
+ 
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center justify-between text-xs px-2 py-1.5 bg-emerald-600/10 rounded border border-emerald-600/20">
                   <span className="text-slate-300 flex items-center gap-1">
@@ -204,14 +204,14 @@ export default function Dashboard() {
                   <span className="text-red-400 font-semibold">{stats?.weakPasswords || 0}</span>
                 </div>
               </div>
-
+ 
               <div className="flex items-center gap-2 text-xs text-slate-400 p-2 bg-slate-800/30 rounded">
                 <Bell className="w-3.5 h-3.5" />
                 {stats?.unreadNotifications || 0} notification(s)
               </div>
             </div>
           </Card>
-
+ 
           {/* Category Breakdown */}
           {categoryBreakdown && Object.keys(categoryBreakdown).length > 0 && (
             <Card title="Répartition des comptes" className="border-l-4 border-l-blue-500">
@@ -227,7 +227,7 @@ export default function Dashboard() {
                   };
                   const total = stats?.totalAccounts || 1;
                   const percentage = Math.round((count / total) * 100);
-
+ 
                   return (
                     <div key={category}>
                       <div className="flex items-center justify-between text-xs mb-1">
@@ -246,7 +246,7 @@ export default function Dashboard() {
               </ul>
             </Card>
           )}
-
+ 
           <Card title="Recommandations de sécurité" className="border-l-4 border-l-orange-500">
             <ul className="space-y-2">
               {stats?.weakPasswords > 0 && (
@@ -275,7 +275,7 @@ export default function Dashboard() {
               )}
             </ul>
           </Card>
-
+ 
           <Card title="Activité récente" subtitle="Vos 5 dernières actions">
             {recentActivity.length === 0 ? (
               <div className="text-center py-8 text-slate-500">
@@ -304,4 +304,3 @@ export default function Dashboard() {
     </div>
   );
 }
-

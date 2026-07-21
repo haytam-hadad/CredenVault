@@ -1,549 +1,322 @@
-# CredenVault - Secure Password Manager
+# CredenVault — Secure Password Manager
 
-A modern, secure password manager built with Node.js and React. CredenVault provides enterprise-grade encryption, two-factor authentication (2FA), and a beautiful user interface for managing your credentials safely.
+A modern, secure password manager built with **Node.js/Express** and **React (Vite)**.
+CredenVault stores your credentials with AES-256-GCM encryption, supports TOTP two-factor
+authentication, analyses password strength, generates actionable security reminders, and
+gates sensitive actions behind a re-authentication layer.
+
+> The user interface is in **French**; this document is in English.
 
 ## 🔐 Features
 
 ### Security
-- **AES-256-GCM Encryption**: Military-grade encryption for all stored passwords
-- **TOTP-Based 2FA**: Two-factor authentication using time-based one-time passwords
-- **Password Strength Validation**: Real-time password strength analysis and recommendations
-- **Audit Logging**: Complete security event logging and activity tracking
-- **Input Validation & Sanitization**: Comprehensive validation to prevent security vulnerabilities
-- **Rate Limiting**: Protected against brute force attacks
-- **Secure Session Management**: JWT-based authentication with expiration
+- **AES-256-GCM encryption** for every stored account password (unique IV per secret).
+- **Account passwords are never returned in list responses** — they are decrypted only on the single-account endpoint.
+- **bcryptjs** password hashing (12 rounds) for user login credentials.
+- **TOTP-based 2FA** (RFC 6238) with QR-code enrolment.
+- **Re-authentication layer** — revealing/copying a password, removing a favorite, viewing the account email, and editing the profile require re-entering the master password (with a short "sudo mode" grace window).
+- **Password strength analysis** with actionable feedback.
+- **Audit logging** of security-relevant events (login, 2FA, account/profile changes, import/export…).
+- **Actionable notifications** — weak-password alerts and password-renewal reminders, distinct from the audit log.
+- **Zod input validation**, **helmet** headers, **rate limiting**, and CORS protection.
+- **JWT authentication** (Bearer token) with configurable expiry.
 
 ### User Experience
-- **Dark & Light Mode**: Seamless theme switching with full CSS support
-- **Real-Time Security Score**: Visual security indicators and recommendations
-- **Beautiful Dashboard**: Intuitive interface showing account overview and recent activity
-- **Advanced Search & Filtering**: Easily find and organize your credentials
-- **Pagination**: Efficiently handle large account collections
-- **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
+- Dashboard with a computed security score and recent activity.
+- Notification bell in the navbar with an unread badge and dropdown (30s polling).
+- Password generator with configurable character sets.
+- Import / export of the vault (Data Management page).
+- Search, category filtering, favorites, and pagination.
+- Responsive, dark-themed UI built with Tailwind CSS.
 
-### Account Management
-- **Categorized Accounts**: Organize credentials by category (email, social, finance, work, entertainment)
-- **Favorites System**: Mark important accounts for quick access
-- **Notes & URLs**: Store additional information and direct links
-- **Real-Time Updates**: Changes reflected instantly across the app
-- **Bulk Operations**: Manage multiple accounts efficiently
+## 🧱 Tech Stack
+
+| Layer | Technologies |
+|-------|--------------|
+| Frontend | React 18, Vite 6, React Router 7, Zustand, Axios, react-hot-toast, lucide-react, Tailwind CSS |
+| Backend | Node.js, Express 4, Mongoose 8 (MongoDB), Zod, bcryptjs, jsonwebtoken, speakeasy, qrcode, nodemailer, helmet, express-rate-limit |
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 16+ 
-- npm or yarn
-- MongoDB or compatible database
+- Node.js 18+
+- npm
+- MongoDB (local or hosted)
 
-### Installation
-
-1. **Clone the repository**
+### 1. Clone
 ```bash
 git clone https://github.com/haytam-hadad/CredenVault.git
 cd CredenVault
 ```
 
-2. **Backend Setup**
+### 2. Backend
 ```bash
 cd backend
 npm install
+cp .env.example .env        # then edit values (see below)
 
-# Configure environment variables
-cp .env.example .env
+# generate a 32-byte hex ENCRYPTION_KEY:
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+# or: openssl rand -hex 32
 
-# Generate encryption key
-openssl rand -hex 32
-
-# Edit .env with your settings
-npm start
+npm run dev                 # nodemon (development)
+# npm start                 # production
 ```
+The API starts on `http://localhost:5000` (prefix `/api`).
 
-3. **Frontend Setup**
+### 3. Frontend
 ```bash
 cd frontend
 npm install
+cp .env.example .env        # sets VITE_API_URL
 
-# Build for production
-npm run build
-
-# Or run development server
-npm run dev
+npm run dev                 # Vite dev server on http://localhost:5173
+# npm run build && npm run preview   # production build
 ```
 
 ## 📋 Environment Variables
 
-### Backend (.env)
+### Backend (`backend/.env`)
+`MONGODB_URI`, `JWT_SECRET`, and `ENCRYPTION_KEY` are **required** (the server refuses to
+start without them, and `ENCRYPTION_KEY` must be exactly 64 hex characters).
+
 ```env
-# Server Configuration
 PORT=5000
 NODE_ENV=development
 
-# Database
-DATABASE_URL=mongodb://localhost:27017/credenvault
+MONGODB_URI=mongodb://localhost:27017/credenvault
 
-# Security - IMPORTANT: Generate with: openssl rand -hex 32
-ENCRYPTION_KEY=your_64_character_hex_string_here
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+JWT_EXPIRES_IN=7d
 
-# JWT Authentication
-JWT_SECRET=your_jwt_secret_key_change_this
-JWT_EXPIRE=7d
+# 32-byte hex key for AES-256 (generate with the command above)
+ENCRYPTION_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 
-# CORS - Frontend URLs
-ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com
+CORS_ORIGIN=http://localhost:5173
 
-# Email Configuration (Optional)
+# Email (Nodemailer) — optional, only needed for email renewal reminders
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+EMAIL_FROM=CredenVault <noreply@credenvault.com>
 ```
 
-### Frontend (.env.local)
+### Frontend (`frontend/.env`)
 ```env
-REACT_APP_API_URL=http://localhost:5000/api
-REACT_APP_APP_NAME=CredenVault
+VITE_API_URL=http://localhost:5000/api
 ```
 
-## 🏗️ Architecture
+## 🏗️ Project Structure
 
-### Backend Structure (Node.js/Express)
+### Backend (`backend/src/`)
 ```
-backend/
-├── src/
-│   ├── config/              # Database & environment config
-│   │   ├── db.js
-│   │   └── env.js
-│   ├── controllers/          # Request handlers
-│   │   ├── authController.js
-│   │   ├── accountController.js
-│   │   └── userController.js
-│   ├── models/              # MongoDB schemas
-│   │   ├── User.js
-│   │   ├── Account.js
-│   │   └── SecurityLog.js
-│   ├── routes/              # API endpoints
-│   │   ├── authRoutes.js
-│   │   ├── accountRoutes.js
-│   │   └── userRoutes.js
-│   ├── middlewares/          # Express middlewares
-│   │   ├── authMiddleware.js
-│   │   ├── errorHandler.js
-│   │   └── validateRequest.js
-│   ├── validators/           # Zod validation schemas
-│   │   ├── authValidator.js
-│   │   └── accountValidator.js
-│   ├── services/             # Business logic
-│   │   ├── encryptionService.js
-│   │   ├── emailService.js
-│   │   └── passwordService.js
-│   └── server.js            # Application entry point
-└── package.json
+config/         db.js, env.js
+controllers/    authController.js, accountController.js,
+                userController.js, securityController.js
+models/         User.js, Account.js, Notification.js,
+                SecurityLog.js, SecuritySettings.js
+routes/         index.js, authRoutes.js, accountRoutes.js,
+                userRoutes.js, securityRoutes.js
+middlewares/    authMiddleware.js, errorHandler.js, validate.js
+validators/     authValidator.js, accountValidator.js,
+                userValidator.js, securityValidator.js
+services/       encryptionService.js, passwordService.js,
+                emailService.js, notificationService.js,
+                securityLogService.js
+utils/          AppError.js
+server.js       Application entry point
 ```
 
-### Frontend Structure (React)
+### Frontend (`frontend/src/`)
 ```
-frontend/
-├── src/
-│   ├── components/
-│   │   ├── ui/              # Reusable UI components
-│   │   │   ├── Button.jsx
-│   │   │   ├── Input.jsx
-│   │   │   ├── Card.jsx
-│   │   │   ├── Modal.jsx
-│   │   │   └── SecurityBadge.jsx
-│   │   ├── accounts/        # Account-related components
-│   │   │   ├── AccountCard.jsx
-│   │   │   └── AccountForm.jsx
-│   │   └── layout/          # Layout components
-│   │       ├── Navbar.jsx
-│   │       └── Sidebar.jsx
-│   ├── pages/               # Page components
-│   │   ├── Login.jsx
-│   │   ├── Register.jsx
-│   │   ├── Dashboard.jsx
-│   │   ├── Accounts.jsx
-│   │   └── Settings.jsx
-│   ├── store/               # Zustand state management
-│   │   ├── authStore.js
-│   │   ├── accountStore.js
-│   │   └── themeStore.js
-│   ├── services/             # API calls
-│   │   ├── authService.js
-│   │   └── accountService.js
-│   ├── utils/               # Helper functions
-│   │   └── helpers.js
-│   ├── index.css            # Global styles with dark/light mode
-│   └── App.jsx              # Main component
-└── package.json
+components/
+  ui/           Button, Card, Input, Modal, SecurityBadge, index
+  accounts/     AccountCard, AccountForm, PasswordStrength
+  auth/         ProtectedRoute, ReAuthContext, ReAuthModal
+  layout/       Layout, AuthLayout, Navbar, Sidebar
+pages/          Login, Register, Dashboard, Accounts, Favorites,
+                PasswordGenerator, ActivityLog, DataManagement,
+                Notifications, Settings
+store/          authStore, notificationStore, themeStore   (Zustand)
+services/       api.js (Axios instance), index.js (service methods)
+utils/          helpers.js
+main.jsx, App.jsx, index.css
 ```
 
 ## 🔄 API Endpoints
 
-### Authentication Endpoints
+All protected routes require an `Authorization: Bearer <token>` header. Base path: `/api`.
 
+### Auth (`/auth`)
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| POST | `/auth/register` | Register new user | ❌ |
-| POST | `/auth/login` | Login user | ❌ |
-| POST | `/auth/logout` | Logout user | ✅ |
-| POST | `/auth/setup-2fa` | Setup 2FA | ✅ |
-| POST | `/auth/verify-2fa` | Verify 2FA code | ✅ |
-| POST | `/auth/disable-2fa` | Disable 2FA | ✅ |
+| POST | `/auth/register` | Register a new user | ❌ |
+| POST | `/auth/login` | Log in (returns JWT) | ❌ |
+| POST | `/auth/logout` | Log out | ✅ |
+| GET | `/auth/me` | Current user | ✅ |
+| POST | `/auth/2fa/setup` | Start 2FA enrolment (QR + secret) | ✅ |
+| POST | `/auth/2fa/verify` | Verify & enable 2FA | ✅ |
+| POST | `/auth/2fa/disable` | Disable 2FA (password + OTP) | ✅ |
+| POST | `/auth/verify-password` | Re-authenticate (validate master password) | ✅ |
 
-### Accounts Endpoints (Protected)
-
+### Users (`/users`)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/accounts` | Get all user accounts (paginated) |
-| POST | `/accounts` | Create new account |
-| GET | `/accounts/:id` | Get account details |
+| GET | `/users/profile` | Get profile |
+| PUT | `/users/profile` | Update profile |
+| PUT | `/users/password` | Change password |
+| GET | `/users/security-settings` | Get security settings |
+| PUT | `/users/security-settings` | Update security settings |
+| DELETE | `/users/account` | Deactivate account |
+
+### Accounts (`/accounts`, protected)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/accounts` | List accounts (`category`, `search`, `isFavorite`, `page`, `limit`) |
+| POST | `/accounts` | Create account |
+| GET | `/accounts/stats` | Account statistics |
+| GET | `/accounts/export/all` | Export all accounts (decrypted) |
+| POST | `/accounts/import/bulk` | Bulk import |
+| GET | `/accounts/:id` | Get one account (includes decrypted password) |
 | PUT | `/accounts/:id` | Update account |
 | DELETE | `/accounts/:id` | Delete account |
-| POST | `/accounts/:id/toggle-favorite` | Toggle favorite status |
 
-### User Endpoints (Protected)
-
+### Security (`/security`, protected)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/users/profile` | Get user profile |
-| PUT | `/users/profile` | Update profile |
-| POST | `/users/change-password` | Change password |
+| POST | `/security/password/check-strength` | Evaluate password strength |
+| POST | `/security/password/generate` | Generate a secure password |
+| GET | `/security/dashboard` | Dashboard stats + recent activity |
+| GET | `/security/notifications` | List notifications (`status` filter) |
+| GET | `/security/notifications/unread-count` | Unread count |
+| PATCH | `/security/notifications/read-all` | Mark all as read |
+| POST | `/security/notifications/generate` | Generate weak/outdated reminders (no email) |
+| PATCH | `/security/notifications/:id/read` | Mark one as read |
+| GET | `/security/logs` | Recent security logs |
+| POST | `/security/password-renewals/check` | Email renewal reminders (requires SMTP) |
 
-## 📊 Database Schema
+Health check: `GET /api/health`.
 
-### User Collection
+## 📊 Data Models
+
+### User
 ```javascript
 {
-  _id: ObjectId,
-  email: String,
-  password: String,           // bcryptjs hashed
+  email: String,            // unique, lowercase
+  password: String,         // bcrypt hash, select:false
   firstName: String,
   lastName: String,
   twoFactorEnabled: Boolean,
-  twoFactorSecret: String,    // Only if 2FA enabled
-  createdAt: Date,
-  updatedAt: Date
+  twoFactorSecret: String,  // select:false
+  isActive: Boolean,
+  lastLogin: Date,
+  timestamps: true
 }
 ```
 
-### Account Collection
+### Account
 ```javascript
 {
-  _id: ObjectId,
-  userId: ObjectId,           // Reference to User
+  userId: ObjectId,             // ref User
   serviceName: String,
-  username: String,
-  password: String,           // AES-256-GCM encrypted
+  username: String,             // account identifier / login
+  encryptedPassword: String,    // AES-256-GCM ciphertext (never exposed in JSON)
+  iv: String,                   // per-secret IV (never exposed in JSON)
   url: String,
-  category: Enum,             // email|social|finance|work|entertainment|other
+  category: 'email'|'social'|'finance'|'work'|'entertainment'|'other',
+  passwordStrength: { score: 0-4, label: 'very-weak'|'weak'|'fair'|'strong'|'very-strong' },
+  lastPasswordChange: Date,
   notes: String,
   isFavorite: Boolean,
-  passwordStrength: {
-    score: Number,            // 0-4
-    label: String             // weak|fair|good|strong|very strong
-  },
-  createdAt: Date,
-  updatedAt: Date
+  timestamps: true
 }
 ```
 
-### SecurityLog Collection
+### Notification
 ```javascript
 {
-  _id: ObjectId,
   userId: ObjectId,
-  action: String,             // login|logout|create_account|update_account|delete_account
+  message: String,
+  type: 'password-renewal'|'security-alert'|'account-update'|'system',
+  status: 'unread'|'read'|'archived',
+  relatedAccountId: ObjectId,   // ref Account
+  metadata: Mixed,              // e.g. { serviceName, username, daysSinceChange }
+  timestamps: true
+}
+```
+
+### SecurityLog
+```javascript
+{
+  userId: ObjectId,
+  action: 'login'|'login-failed'|'logout'|'password-change'|
+          'account-created'|'account-updated'|'account-deleted'|
+          '2fa-enabled'|'2fa-disabled'|'2fa-verified'|
+          'profile-updated'|'data-exported'|'data-imported',
   ipAddress: String,
   userAgent: String,
-  status: String,             // success|failure
-  details: Object,
-  createdAt: Date
+  success: Boolean,
+  details: String,
+  timestamps: true
+}
+```
+
+### SecuritySettings
+```javascript
+{
+  userId: ObjectId,                          // unique
+  emailNotificationsEnabled: Boolean,        // default true
+  passwordRenewalReminderDays: Number,       // 30–365, default 90
+  loginAlertsEnabled: Boolean,               // default true
+  sessionTimeoutMinutes: Number,             // 15–1440, default 60
+  requireTwoFactorForSensitiveActions: Boolean,
+  timestamps: true
 }
 ```
 
 ## 🔒 Security Implementation
 
-### Password Storage
-- Passwords are hashed using **bcryptjs** with **12 rounds** before storage
-- Never stored in plain text
-- Account passwords are encrypted separately using AES-256-GCM
+- **User passwords**: bcryptjs, 12 salt rounds, hashed in a Mongoose `pre('save')` hook; `password` field is `select:false`.
+- **Account passwords**: AES-256-GCM with a per-secret random IV; the 32-byte key comes from `ENCRYPTION_KEY`. Ciphertext and IV are stripped from JSON output.
+- **Re-authentication**: `POST /auth/verify-password` re-checks the bcrypt hash; the frontend `ReAuthProvider`/`useReauth()` gates sensitive actions and keeps a wrong password inside the modal (it is exempt from the Axios 401 auto-logout).
+- **2FA**: speakeasy TOTP (6 digits, 30s window) with a `qrcode` enrolment image.
+- **Rate limiting**:
+  - Global: 100 requests / 15 min on `/api`
+  - Auth (`/api/auth/login`, `/api/auth/register`): 20 / 15 min
+  - Accounts (`/api/accounts`): 30 / min
+- **Other**: helmet headers, JSON body limit (10kb), CORS restricted to `CORS_ORIGIN`, Zod validation on all mutating routes.
 
-### Encryption Details
-- **Algorithm**: AES-256-GCM (Galois/Counter Mode)
-- **Key Size**: 256 bits (32 bytes / 64 hex characters)
-- **IV**: Randomly generated for each encryption
-- **Auth Tag**: Ensures data integrity
-- **Generate Key**: `openssl rand -hex 32`
+## 🔑 Password Strength
 
-### Two-Factor Authentication (2FA)
-- **Method**: TOTP (Time-based One-Time Password)
-- **Standard**: RFC 6238
-- **Code Length**: 6 digits
-- **Time Window**: 30 seconds
-- **Compatible Apps**: 
-  - Google Authenticator
-  - Authy
-  - Microsoft Authenticator
-  - FreeOTP
+`evaluatePasswordStrength` returns a `score` (0–4) and a `label`
+(`very-weak`, `weak`, `fair`, `strong`, `very-strong`) plus feedback. A password is
+considered weak when `score <= 1`. The generator (`generateSecurePassword`) produces
+8–128 character passwords from the selected character sets using Node's `crypto` RNG.
 
-### Rate Limiting
-```
-Authentication: 20 requests per 15 minutes
-Account Operations: 30 requests per minute
-```
+## 🧪 Verification
 
-### Input Validation
-- All inputs validated with Zod schemas
-- Email format validation
-- Password requirements: minimum 8 characters
-- OTP code: exactly 6 digits
-- Field length limits to prevent DoS attacks
+There is no automated test suite configured. To sanity-check changes:
 
-### Session Security
-- JWT-based authentication
-- Token expiration: 7 days
-- Secure HTTP-only cookies
-- CORS protection
-
-## 🎨 Themes & Styling
-
-### Color Palette
-
-| Purpose | Color | Hex | Usage |
-|---------|-------|-----|-------|
-| Primary | Brand Blue | #0EA5E9 | Main actions, focus states |
-| Secondary | Indigo | #6366F1 | Accents, secondary elements |
-| Success | Emerald | #10B981 | Success messages, strong passwords |
-| Warning | Amber | #F59E0B | Warnings, fair passwords |
-| Danger | Red | #EF4444 | Errors, weak passwords |
-| Background | Slate | #0F172A | Main background (dark) |
-| Surface | Slate | #1E293B | Cards, containers (dark) |
-
-### Dark Mode (Default)
-```css
---slate-50: 248 250 252;
---slate-100: 241 245 249;
-...
---slate-950: 2 6 23;
-```
-
-### Light Mode
-```css
-.light {
-  --slate-50: 2 6 23;
-  --slate-100: 15 23 42;
-  ...
-  --slate-950: 248 250 252;
-}
-```
-
-## 📱 Responsive Design
-
-| Breakpoint | Width | Use Case |
-|------------|-------|----------|
-| Mobile | < 640px | Phones |
-| Tablet | 640px - 1024px | Tablets, large phones |
-| Desktop | 1024px+ | Desktops, large screens |
-
-### Mobile-First Approach
-- All components designed for mobile first
-- Progressive enhancement for larger screens
-- Touch-friendly interface elements
-
-## 🧪 Testing
-
-### Backend Tests
 ```bash
-cd backend
-npm test
+# Backend — syntax check controllers/routes you touched
+cd backend && node -c src/server.js
+
+# Frontend — production build must succeed
+cd frontend && npm run build
 ```
 
-### Frontend Tests
-```bash
-cd frontend
-npm test
-```
-
-## 🚢 Deployment
-
-### Heroku Deployment
-```bash
-# Install Heroku CLI
-npm i -g heroku
-
-# Login to Heroku
-heroku login
-
-# Create app
-heroku create credenvault
-
-# Configure buildpacks
-heroku buildpacks:add heroku/nodejs
-
-# Set environment variables
-heroku config:set DATABASE_URL=your_mongodb_url
-heroku config:set ENCRYPTION_KEY=your_hex_key
-heroku config:set JWT_SECRET=your_secret
-
-# Deploy
-git push heroku main
-```
-
-### Vercel Deployment (Frontend)
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-cd frontend
-vercel
-
-# Configure environment variables in Vercel dashboard
-```
-
-### Docker Deployment
-```dockerfile
-# Backend
-FROM node:16-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-EXPOSE 5000
-CMD ["npm", "start"]
-```
-
-## 📝 Recent Improvements
-
-### Backend
-- ✅ Fixed OTP validation to handle empty/missing tokens
-- ✅ Added field length validation (prevent DoS attacks)
-- ✅ Implemented pagination for accounts endpoint
-- ✅ Added database indexes for better performance
-- ✅ Rate limiting on all sensitive endpoints
-
-### Frontend
-- ✅ Comprehensive dark/light mode support
-- ✅ Redesigned login page with security indicators
-- ✅ Enhanced CSS with theme utilities
-- ✅ Improved form validation feedback
-- ✅ Added security feature badges
-
-## 🐛 Troubleshooting
-
-### Issue: "String must contain exactly 6 character(s)"
-**Cause**: OTP token validation failing on empty input
-**Solution**: 
-- Enter exactly 6 digits from your authenticator app
-- Ensure no spaces or special characters
-- If you lost your authenticator, disable 2FA in settings
-
-### Issue: Light mode text not visible
-**Cause**: CSS theme variables not properly applied
-**Solution**:
-- Clear browser cache (Cmd+Shift+Delete)
-- Hard reload page (Cmd+Shift+R)
-- Check `.light` class on `<html>` element
-
-### Issue: Cannot login after creating account
-**Cause**: Session or database issue
-**Solution**:
-- Clear browser cookies and localStorage
-- Try logging in from incognito/private window
-- Check backend logs for errors
-
-### Issue: "Encryption key must be valid hexadecimal"
-**Cause**: Invalid ENCRYPTION_KEY format
-**Solution**:
-```bash
-# Generate valid key
-openssl rand -hex 32
-
-# Update .env file
-ENCRYPTION_KEY=your_new_key_here
-
-# Restart backend
-npm start
-```
-
-### Issue: Database connection failed
-**Cause**: MongoDB not running or incorrect connection string
-**Solution**:
-```bash
-# Check MongoDB status
-mongod --version
-
-# Start MongoDB (macOS with Homebrew)
-brew services start mongodb-community
-
-# Test connection string
-mongodb://localhost:27017/credenvault
-```
-
-## 📚 Additional Documentation
-
-- [**BACKEND_REVIEW.md**](./BACKEND_REVIEW.md) - Detailed backend analysis, security audit, and improvements
-- [**FRONTEND_IMPROVEMENTS.md**](./FRONTEND_IMPROVEMENTS.md) - UI/UX enhancements and design decisions
-- [**SECURITY_FEATURES_GUIDE.md**](./SECURITY_FEATURES_GUIDE.md) - Security implementation details and best practices
-- [**IMPLEMENTATION_SUMMARY.md**](./IMPLEMENTATION_SUMMARY.md) - Complete project overview and deployment guide
-- [**CODE_CHANGES.md**](./CODE_CHANGES.md) - Before/after code comparisons
-- [**FIXES_APPLIED.md**](./FIXES_APPLIED.md) - All fixes and improvements applied
-
-## 🎯 Development Roadmap
-
-### Phase 2
-- [ ] Password generator tool
-- [ ] Bulk account import/export
-- [ ] Breach detection alerts
-- [ ] Account activity history
-- [ ] Custom password rules
-
-### Phase 3
-- [ ] Team collaboration features
-- [ ] Shared vaults
-- [ ] Admin dashboard
-- [ ] Advanced reporting
-- [ ] API for third-party apps
-
-### Phase 4
-- [ ] Browser extensions (Chrome, Firefox, Safari)
-- [ ] Mobile apps (iOS, Android)
-- [ ] Biometric authentication
-- [ ] Hardware key support
-- [ ] Offline mode
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
+## 🗺️ Roadmap Ideas
+- Breach-detection alerts
+- Browser extensions
+- Shared vaults / team features
+- Biometric / hardware-key authentication
+- Offline mode
 
 ## 📄 License
 
-MIT License - See [LICENSE](./LICENSE) file for details
-
-## 📞 Support & Community
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/haytam-hadad/CredenVault/issues)
-- **Documentation**: Check the docs folder for detailed guides
-- **Security**: Please email security issues to security@credenvault.com
-
-## ⭐ Acknowledgments
-
-- Built with [React](https://react.dev)
-- Backend powered by [Express.js](https://expressjs.com)
-- Encryption with [crypto](https://nodejs.org/api/crypto.html)
-- Validation using [Zod](https://zod.dev)
-- UI components styled with [Tailwind CSS](https://tailwindcss.com)
+MIT (see `package.json`). No standalone `LICENSE` file is included yet.
 
 ---
 
-**Project Status**: ✅ Production Ready
-**Latest Version**: 1.0.0
-**Last Updated**: January 2024
-
-🔐 **Protect your passwords with CredenVault** 🔐
+🔐 **Protect your passwords with CredenVault**

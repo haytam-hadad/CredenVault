@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Star, Copy, Eye, Trash2, Heart } from 'lucide-react';
+import { Star, Copy, Eye, EyeOff, Trash2, Heart } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card, Button } from '../components/ui';
+import { useReauth } from '../components/auth/ReAuthContext';
 import { accountService } from '../services';
 
 export default function Favorites() {
+  const { requireReauth } = useReauth();
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showPassword, setShowPassword] = useState({});
+  // Maps account id -> decrypted password once revealed via re-auth.
+  const [revealed, setRevealed] = useState({});
 
   useEffect(() => {
     loadFavorites();
@@ -16,41 +19,78 @@ export default function Favorites() {
   const loadFavorites = async () => {
     try {
       const res = await accountService.getAll({ isFavorite: true });
-      const favoriteAccounts = res.accounts || res.data?.accounts || res.data || [];
-      const filtered = Array.isArray(favoriteAccounts) 
-        ? favoriteAccounts.filter(acc => acc.isFavorite) 
-        : [];
-      setFavorites(filtered);
+      setFavorites(res.data?.accounts || []);
     } catch (error) {
       console.error('Failed to load favorites:', error);
-      toast.error('Failed to load favorites');
+      toast.error('Échec du chargement des favoris');
     } finally {
       setLoading(false);
     }
   };
 
-  const removeFavorite = async (id) => {
-    try {
-      await accountService.update(id, { isFavorite: false });
-      setFavorites(favorites.filter(f => f._id !== id));
-      toast.success('Removed from favorites');
-    } catch (error) {
-      toast.error('Failed to remove favorite');
-    }
+  const removeFavorite = (account) => {
+    requireReauth(
+      async () => {
+        try {
+          await accountService.update(account._id, { isFavorite: false });
+          setFavorites((prev) => prev.filter((f) => f._id !== account._id));
+          toast.success('Retiré des favoris');
+        } catch (error) {
+          toast.error(error.message || 'Échec du retrait du favori');
+        }
+      },
+      {
+        title: 'Confirmer le retrait',
+        description: `Confirmez votre identité pour retirer "${account.serviceName}" de vos favoris.`,
+        actionLabel: 'Retirer',
+      }
+    );
   };
 
-  const copyPassword = async (account) => {
-    try {
-      const res = await accountService.getOne(account._id);
-      navigator.clipboard.writeText(res.account.password);
-      toast.success('Password copied!');
-    } catch (error) {
-      toast.error('Failed to copy password');
-    }
+  const copyPassword = (account) => {
+    requireReauth(
+      async () => {
+        try {
+          const res = await accountService.getOne(account._id);
+          await navigator.clipboard.writeText(res.data.account.password);
+          toast.success('Mot de passe copié !');
+        } catch (error) {
+          toast.error(error.message || 'Échec de la copie');
+        }
+      },
+      {
+        title: 'Afficher le mot de passe',
+        description: `Confirmez votre identité pour copier le mot de passe de "${account.serviceName}".`,
+        actionLabel: 'Copier',
+      }
+    );
   };
 
-  const toggleShowPassword = (id) => {
-    setShowPassword(prev => ({ ...prev, [id]: !prev[id] }));
+  const toggleShowPassword = (account) => {
+    if (revealed[account._id]) {
+      setRevealed((prev) => {
+        const next = { ...prev };
+        delete next[account._id];
+        return next;
+      });
+      return;
+    }
+
+    requireReauth(
+      async () => {
+        try {
+          const res = await accountService.getOne(account._id);
+          setRevealed((prev) => ({ ...prev, [account._id]: res.data.account.password }));
+        } catch (error) {
+          toast.error(error.message || 'Échec de l’affichage du mot de passe');
+        }
+      },
+      {
+        title: 'Afficher le mot de passe',
+        description: `Confirmez votre identité pour afficher le mot de passe de "${account.serviceName}".`,
+        actionLabel: 'Afficher',
+      }
+    );
   };
 
   if (loading) {
@@ -60,7 +100,7 @@ export default function Favorites() {
       </div>
     );
   }
-
+ 
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
@@ -72,7 +112,7 @@ export default function Favorites() {
           Accès rapide à vos comptes importants
         </p>
       </div>
-
+ 
       {favorites.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-stagger">
           {favorites.map((account) => (
@@ -89,20 +129,22 @@ export default function Favorites() {
                   </div>
                   <Heart className="w-5 h-5 text-red-400 flex-shrink-0 fill-current" />
                 </div>
-
+ 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2 bg-slate-800 rounded-lg">
-                    <span className="text-xs text-slate-500 ">
-                      {showPassword[account._id] ? '••••••••' : '••••••••'}
+                  <div className="flex items-center justify-between gap-2 p-2 bg-slate-800 rounded-lg">
+                    <span className={`text-xs truncate ${revealed[account._id] ? 'text-slate-100 font-mono' : 'text-slate-500'}`}>
+                      {revealed[account._id] || '••••••••'}
                     </span>
                     <button
-                      onClick={() => toggleShowPassword(account._id)}
-                      className="text-slate-400 hover:text-slate-100 transition-colors"
+                      onClick={() => toggleShowPassword(account)}
+                      className="shrink-0 text-slate-400 hover:text-slate-100 transition-colors"
+                      aria-label={revealed[account._id] ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                      title={revealed[account._id] ? 'Masquer' : 'Afficher'}
                     >
-                      <Eye className="w-4 h-4" />
+                      {revealed[account._id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-
+ 
                   <div className="flex gap-2">
                     <Button
                       onClick={() => copyPassword(account)}
@@ -113,7 +155,7 @@ export default function Favorites() {
                     </Button>
                     <Button
                       variant="danger"
-                      onClick={() => removeFavorite(account._id)}
+                      onClick={() => removeFavorite(account)}
                       className="flex-1"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -121,7 +163,7 @@ export default function Favorites() {
                     </Button>
                   </div>
                 </div>
-
+ 
                 {account.url && (
                   <a
                     href={account.url}

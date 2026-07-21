@@ -1,6 +1,6 @@
 import { ExternalLink, Star, Trash2, Edit, Shield, ShieldAlert, Lock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { STRENGTH_LABELS, CATEGORY_LABELS, formatDate } from '../../utils/helpers';
-
+ 
 export default function AccountCard({ account, onEdit, onDelete, onToggleFavorite }) {
   const isWeak = account.passwordStrength?.score <= 1;
   const strengthScore = account.passwordStrength?.score;
@@ -16,7 +16,7 @@ export default function AccountCard({ account, onEdit, onDelete, onToggleFavorit
     if (score <= 3) return 'bg-yellow-600/20';
     return 'bg-emerald-600/20';
   };
-
+ 
   return (
     <div className="glass-card p-4 hover:border-brand-500/30 hover:bg-slate-900/80 transition-all group border-l-4 border-l-brand-500">
       <div className="flex items-start justify-between gap-3">
@@ -34,7 +34,7 @@ export default function AccountCard({ account, onEdit, onDelete, onToggleFavorit
             <p className="text-sm text-slate-400 truncate">{account.username}</p>
           </div>
         </div>
-
+ 
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {onToggleFavorite && (
             <button
@@ -63,7 +63,7 @@ export default function AccountCard({ account, onEdit, onDelete, onToggleFavorit
           )}
         </div>
       </div>
-
+ 
       <div className="space-y-3 mt-4 pt-3 border-t border-slate-800/50">
         <div className="flex items-center justify-between text-xs">
           <span className="px-2.5 py-1 bg-slate-800/80 rounded-lg text-slate-400 font-medium">
@@ -80,7 +80,7 @@ export default function AccountCard({ account, onEdit, onDelete, onToggleFavorit
             {STRENGTH_LABELS[account.passwordStrength?.label] || 'N/A'}
           </span>
         </div>
-
+ 
         {account.url && (
           <a
             href={account.url}
@@ -92,7 +92,7 @@ export default function AccountCard({ account, onEdit, onDelete, onToggleFavorit
             Ouvrir <ExternalLink className="w-3 h-3" />
           </a>
         )}
-
+ 
         <div className="space-y-1 pt-2 border-t border-slate-800/50">
           <p className="text-xs text-slate-500">
             Créé le {formatDate(account.createdAt)}

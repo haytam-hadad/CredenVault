@@ -6,7 +6,7 @@ import AccountCard from '../components/accounts/AccountCard';
 import AccountForm from '../components/accounts/AccountForm';
 import { accountService } from '../services';
 import { CATEGORY_LABELS } from '../utils/helpers';
-
+ 
 export default function Accounts() {
   const [accounts, setAccounts] = useState([]);
   const [stats, setStats] = useState(null);
@@ -21,7 +21,7 @@ export default function Accounts() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-
+ 
   const loadStats = async () => {
     try {
       setStatsLoading(true);
@@ -33,7 +33,7 @@ export default function Accounts() {
       setStatsLoading(false);
     }
   };
-
+ 
   const loadAccounts = async () => {
     try {
       setLoading(true);
@@ -42,7 +42,7 @@ export default function Accounts() {
       if (category) params.category = category;
       const res = await accountService.getAll(params);
       let filteredAccounts = res.data.accounts || [];
-
+ 
       // Apply strength filter
       if (strengthFilter) {
         filteredAccounts = filteredAccounts.filter(acc => {
@@ -52,7 +52,7 @@ export default function Accounts() {
           return true;
         });
       }
-
+ 
       // Apply sorting
       filteredAccounts = filteredAccounts.sort((a, b) => {
         switch (sortBy) {
@@ -65,7 +65,7 @@ export default function Accounts() {
             return new Date(b.updatedAt) - new Date(a.updatedAt);
         }
       });
-
+ 
       setAccounts(filteredAccounts);
       setPageInfo({
         total: res.data.total || 0,
@@ -78,20 +78,20 @@ export default function Accounts() {
       setLoading(false);
     }
   };
-
+ 
   useEffect(() => {
     loadStats();
   }, []);
-
+ 
   useEffect(() => {
     setPage(1);
   }, [search, category, strengthFilter, sortBy]);
-
+ 
   useEffect(() => {
     const timer = setTimeout(loadAccounts, 300);
     return () => clearTimeout(timer);
   }, [search, category, strengthFilter, sortBy, page]);
-
+ 
   const handleCreate = async (data) => {
     setSubmitting(true);
     try {
@@ -106,7 +106,7 @@ export default function Accounts() {
       setSubmitting(false);
     }
   };
-
+ 
   const handleUpdate = async (data) => {
     setSubmitting(true);
     try {
@@ -122,7 +122,7 @@ export default function Accounts() {
       setSubmitting(false);
     }
   };
-
+ 
   const handleEdit = async (account) => {
     try {
       const res = await accountService.getOne(account._id);
@@ -141,7 +141,7 @@ export default function Accounts() {
       toast.error(error.message);
     }
   };
-
+ 
   const handleToggleFavorite = async (account) => {
     try {
       await accountService.update(account._id, {
@@ -153,7 +153,7 @@ export default function Accounts() {
       toast.error(error.message);
     }
   };
-
+ 
   const handleDelete = async (account) => {
     if (!window.confirm(`Supprimer le compte "${account.serviceName}" ?`)) return;
     try {
@@ -165,19 +165,19 @@ export default function Accounts() {
       toast.error(error.message);
     }
   };
-
+ 
   const openCreate = () => {
     setEditing(null);
     setModalOpen(true);
   };
-
+ 
   return (
     <div className="space-y-6 animate-fade-in max-w-7xl">
       <div className="animate-slide-in-down">
         <h1 className="text-2xl font-bold text-slate-100">Comptes</h1>
         <p className="text-slate-400 mt-1">Gérez et sécurisez tous vos identifiants</p>
       </div>
-
+ 
       {/* Stats Panel */}
       {stats && !statsLoading && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -190,7 +190,7 @@ export default function Accounts() {
               <Lock className="w-6 h-6 text-brand-400 opacity-50" />
             </div>
           </div>
-
+ 
           <div className="glass-card p-4 rounded-xl border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
@@ -200,7 +200,7 @@ export default function Accounts() {
               <Shield className="w-6 h-6 text-emerald-400 opacity-50" />
             </div>
           </div>
-
+ 
           <div className="glass-card p-4 rounded-xl border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
@@ -210,7 +210,7 @@ export default function Accounts() {
               <AlertTriangle className="w-6 h-6 text-red-400 opacity-50" />
             </div>
           </div>
-
+ 
           <div className="glass-card p-4 rounded-xl border border-slate-700">
             <div className="flex items-center justify-between">
               <div>
@@ -222,7 +222,7 @@ export default function Accounts() {
           </div>
         </div>
       )}
-
+ 
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-400">{pageInfo.total} compte(s) • Page {page} sur {pageInfo.pages}</p>
         <Button onClick={openCreate}>
@@ -230,7 +230,7 @@ export default function Accounts() {
           Ajouter un compte
         </Button>
       </div>
-
+ 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -273,7 +273,7 @@ export default function Accounts() {
           <option value="age">Âge du mot de passe</option>
         </select>
       </div>
-
+ 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
@@ -305,7 +305,7 @@ export default function Accounts() {
               />
             ))}
           </div>
-
+ 
           {pageInfo.pages > 1 && (
             <div className="flex items-center justify-between glass-card p-4">
               <div className="text-sm text-slate-400">
@@ -334,7 +334,7 @@ export default function Accounts() {
           )}
         </>
       )}
-
+ 
       <Modal
         isOpen={modalOpen}
         onClose={() => { setModalOpen(false); setEditing(null); }}
@@ -351,4 +351,3 @@ export default function Accounts() {
     </div>
   );
 }
-

@@ -656,6 +656,31 @@ user:req.user
 
 
 // ==========================
+// VERIFY PASSWORD (re-authentication)
+// ==========================
+
+const verifyPassword = async (req, res, next) => {
+  try {
+    const { password } = req.body;
+
+    const user = await User.findById(req.user._id).select('+password');
+
+    if (!user || !(await user.comparePassword(password))) {
+      return next(new AppError('Mot de passe incorrect', 401));
+    }
+
+    res.json({
+      success: true,
+      data: { verified: true },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+// ==========================
 // LOGOUT
 // ==========================
 
@@ -740,6 +765,8 @@ verify2FA,
 disable2FA,
 
 getMe,
+
+verifyPassword,
 
 logout,
 

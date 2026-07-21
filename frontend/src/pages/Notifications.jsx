@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Bell, CheckCheck, RefreshCw } from 'lucide-react';
+import { Bell, CheckCheck, RefreshCw, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card, Button } from '../components/ui';
 import { securityService } from '../services';
+import useNotificationStore from '../store/notificationStore';
 import { formatDate } from '../utils/helpers';
 
 const TYPE_LABELS = {
@@ -23,6 +24,10 @@ export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [markingAll, setMarkingAll] = useState(false);
+
+  const fetchUnreadCount = useNotificationStore((s) => s.fetchUnreadCount);
 
   const load = async () => {
     try {
@@ -45,8 +50,37 @@ export default function Notifications() {
       setNotifications((prev) =>
         prev.map((n) => (n._id === id ? { ...n, status: 'read' } : n))
       );
+      fetchUnreadCount();
     } catch (error) {
       toast.error(error.message);
+    }
+  };
+
+  const markAllRead = async () => {
+    setMarkingAll(true);
+    try {
+      const res = await securityService.markAllNotificationsRead();
+      toast.success(res.message);
+      await load();
+      fetchUnreadCount();
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setMarkingAll(false);
+    }
+  };
+
+  const generateReminders = async () => {
+    setGenerating(true);
+    try {
+      const res = await securityService.generateReminders();
+      toast.success(res.message);
+      await load();
+      fetchUnreadCount();
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -55,7 +89,8 @@ export default function Notifications() {
     try {
       const res = await securityService.checkRenewals();
       toast.success(res.message);
-      load();
+      await load();
+      fetchUnreadCount();
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -71,13 +106,25 @@ export default function Notifications() {
         <div>
           <h1 className="text-2xl font-bold text-slate-100">Notifications</h1>
           <p className="text-slate-400 mt-1">
-            {unread.length} notification(s) non lue(s)
+            Rappels et alertes de sécurité · {unread.length} non lue(s)
           </p>
         </div>
-        <Button variant="secondary" onClick={checkRenewals} loading={checking}>
-          <RefreshCw className="w-4 h-4" />
-          Vérifier les renouvellements
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {unread.length > 0 && (
+            <Button variant="secondary" onClick={markAllRead} loading={markingAll}>
+              <CheckCheck className="w-4 h-4" />
+              Tout marquer comme lu
+            </Button>
+          )}
+          <Button variant="secondary" onClick={generateReminders} loading={generating}>
+            <Sparkles className="w-4 h-4" />
+            Générer les rappels
+          </Button>
+          <Button variant="secondary" onClick={checkRenewals} loading={checking}>
+            <RefreshCw className="w-4 h-4" />
+            Vérifier les renouvellements
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -106,6 +153,11 @@ export default function Notifications() {
                   <span className="text-xs px-2 py-0.5 bg-slate-800 rounded text-slate-400">
                     {TYPE_LABELS[notif.type] || notif.type}
                   </span>
+                  {notif.metadata?.serviceName && (
+                    <span className="text-xs font-medium text-slate-300 truncate">
+                      {notif.metadata.serviceName}
+                    </span>
+                  )}
                   {notif.status === 'unread' && (
                     <span className="w-2 h-2 bg-brand-500 rounded-full" />
                   )}
@@ -129,4 +181,3 @@ export default function Notifications() {
     </div>
   );
 }
-

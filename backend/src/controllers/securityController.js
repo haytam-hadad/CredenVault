@@ -201,6 +201,126 @@ const checkPasswordRenewals = async (req, res, next) => {
   }
 };
 
+const getUnreadNotificationCount = async (req, res, next) => {
+  try {
+    const count = await Notification.countDocuments({
+      userId: req.user._id,
+      status: 'unread',
+    });
+
+    res.json({
+      success: true,
+      data: { count },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const markAllNotificationsRead = async (req, res, next) => {
+  try {
+    const result = await Notification.updateMany(
+      { userId: req.user._id, status: 'unread' },
+      { status: 'read' }
+    );
+
+    res.json({
+      success: true,
+      message: `${result.modifiedCount} notification(s) marquée(s) comme lue(s)`,
+      data: { modifiedCount: result.modifiedCount },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const generateReminderNotifications = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const settings = await SecuritySettings.findOne({ userId });
+    const reminderDays = settings?.passwordRenewalReminderDays || 90;
+
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - reminderDays);
+
+    const accounts = await Account.find({ userId });
+
+    const outdatedAccounts = accounts.filter(
+      (a) => new Date(a.lastPasswordChange) < cutoffDate
+    );
+    const weakAccounts = accounts.filter((a) => isPasswordWeak(a.passwordStrength));
+
+    // Skip accounts that already have an unread notification of the same type
+    // so repeated generation does not spam duplicates.
+    const existingUnread = await Notification.find({
+      userId,
+      status: 'unread',
+      relatedAccountId: { $ne: null },
+    }).select('type relatedAccountId');
+
+    const existingKeys = new Set(
+      existingUnread.map((n) => `${n.type}:${String(n.relatedAccountId)}`)
+    );
+
+    const now = Date.now();
+    const notifications = [];
+
+    outdatedAccounts.forEach((account) => {
+      const key = `password-renewal:${String(account._id)}`;
+      if (existingKeys.has(key)) return;
+      existingKeys.add(key);
+
+      const daysSinceChange = Math.floor(
+        (now - new Date(account.lastPasswordChange).getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      notifications.push({
+        userId,
+        message: `Rappel : le mot de passe de "${account.serviceName}" (${account.username}) n'a pas été changé depuis ${daysSinceChange} jours. Pensez à le renouveler.`,
+        type: 'password-renewal',
+        relatedAccountId: account._id,
+        metadata: {
+          serviceName: account.serviceName,
+          username: account.username,
+          daysSinceChange,
+        },
+      });
+    });
+
+    weakAccounts.forEach((account) => {
+      const key = `security-alert:${String(account._id)}`;
+      if (existingKeys.has(key)) return;
+      existingKeys.add(key);
+
+      notifications.push({
+        userId,
+        message: `Alerte : le mot de passe de "${account.serviceName}" (${account.username}) est faible. Renforcez-le pour améliorer votre sécurité.`,
+        type: 'security-alert',
+        relatedAccountId: account._id,
+        metadata: {
+          serviceName: account.serviceName,
+          username: account.username,
+          strengthLabel: account.passwordStrength?.label,
+        },
+      });
+    });
+
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+    }
+
+    res.json({
+      success: true,
+      message: notifications.length
+        ? `${notifications.length} rappel(s) généré(s)`
+        : 'Aucun nouveau rappel à générer',
+      data: { generated: notifications.length },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   checkPasswordStrength,
   generatePassword,
@@ -209,4 +329,7 @@ module.exports = {
   markNotificationRead,
   getSecurityLogs,
   checkPasswordRenewals,
+  getUnreadNotificationCount,
+  markAllNotificationsRead,
+  generateReminderNotifications,
 };

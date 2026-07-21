@@ -26,7 +26,7 @@ api.interceptors.response.use(
     // (not an expired session). These must NOT trigger an auto-logout/redirect,
     // otherwise a wrong current password on the change-password form would log
     // the user out instead of showing the error.
-    const credentialCheckEndpoints = ['/auth/login', '/users/password', '/auth/2fa/disable'];
+    const credentialCheckEndpoints = ['/auth/login', '/users/password', '/auth/2fa/disable', '/auth/verify-password'];
     const isCredentialCheck = credentialCheckEndpoints.some((path) =>
       error.config?.url?.includes(path)
     );
