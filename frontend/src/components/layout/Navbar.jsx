@@ -180,6 +180,12 @@ export default function Navbar({ onMenuClick }) {
                           {notif.metadata?.serviceName && (
                             <p className="text-xs font-medium text-slate-300 truncate">
                               {notif.metadata.serviceName}
+                              {notif.metadata.username && (
+                                <span className="text-slate-500 font-normal">
+                                  {' · '}
+                                  {notif.metadata.username}
+                                </span>
+                              )}
                             </p>
                           )}
                           <p className="text-sm text-slate-200 line-clamp-2">{notif.message}</p>

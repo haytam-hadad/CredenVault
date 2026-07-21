@@ -276,10 +276,14 @@ const generateReminderNotifications = async (req, res, next) => {
 
       notifications.push({
         userId,
-        message: `Rappel : le mot de passe de "${account.serviceName}" n'a pas été changé depuis ${daysSinceChange} jours. Pensez à le renouveler.`,
+        message: `Rappel : le mot de passe de "${account.serviceName}" (${account.username}) n'a pas été changé depuis ${daysSinceChange} jours. Pensez à le renouveler.`,
         type: 'password-renewal',
         relatedAccountId: account._id,
-        metadata: { serviceName: account.serviceName, daysSinceChange },
+        metadata: {
+          serviceName: account.serviceName,
+          username: account.username,
+          daysSinceChange,
+        },
       });
     });
 
@@ -290,11 +294,12 @@ const generateReminderNotifications = async (req, res, next) => {
 
       notifications.push({
         userId,
-        message: `Alerte : le mot de passe de "${account.serviceName}" est faible. Renforcez-le pour améliorer votre sécurité.`,
+        message: `Alerte : le mot de passe de "${account.serviceName}" (${account.username}) est faible. Renforcez-le pour améliorer votre sécurité.`,
         type: 'security-alert',
         relatedAccountId: account._id,
         metadata: {
           serviceName: account.serviceName,
+          username: account.username,
           strengthLabel: account.passwordStrength?.label,
         },
       });

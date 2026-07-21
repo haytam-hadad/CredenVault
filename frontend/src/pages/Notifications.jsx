@@ -156,6 +156,12 @@ export default function Notifications() {
                   {notif.metadata?.serviceName && (
                     <span className="text-xs font-medium text-slate-300 truncate">
                       {notif.metadata.serviceName}
+                      {notif.metadata.username && (
+                        <span className="text-slate-500 font-normal">
+                          {' · '}
+                          {notif.metadata.username}
+                        </span>
+                      )}
                     </span>
                   )}
                   {notif.status === 'unread' && (
