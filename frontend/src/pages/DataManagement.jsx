@@ -134,8 +134,8 @@ export default function DataManagement() {
         <Card title="Exporter les données">
           <div className="space-y-4">
             <div className="p-4 bg-blue-600/10 border border-blue-600/30 rounded-lg">
-              <p className="text-sm text-blue-300 font-medium mb-2">À propos de l&apos;exportation</p>
-              <p className="text-xs text-blue-200 leading-relaxed">
+              <p className="text-sm text-blue-600 font-medium mb-2">À propos de l&apos;exportation</p>
+              <p className="text-xs text-blue-500 leading-relaxed">
                 Téléchargez une sauvegarde JSON de tous vos comptes (mots de passe déchiffrés).
                 Conservez ce fichier dans un emplacement sûr et chiffré.
               </p>
@@ -144,7 +144,7 @@ export default function DataManagement() {
             <div className="space-y-2">
               <p className="text-sm font-medium text-slate-300">Format de fichier</p>
               <div className="flex items-center gap-2 p-3 bg-slate-800 rounded-lg">
-                <FileJson className="w-5 h-5 text-yellow-400" />
+                <FileJson className="w-5 h-5 text-yellow-500" />
                 <span className="text-sm text-slate-400">JSON (.json)</span>
               </div>
             </div>
@@ -159,11 +159,11 @@ export default function DataManagement() {
         <Card title="Importer les données">
           <div className="space-y-4">
             <div className="p-4 bg-orange-600/10 border border-orange-600/30 rounded-lg">
-              <p className="text-sm text-orange-300 font-medium mb-2 flex items-center gap-2">
+              <p className="text-sm text-orange-500 font-medium mb-2 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
                 Attention
               </p>
-              <p className="text-xs text-orange-200 leading-relaxed">
+              <p className="text-xs text-orange-400 leading-relaxed">
                 L&apos;importation ajoute les comptes du fichier à votre coffre.
                 Les doublons (même service + identifiant) sont ignorés automatiquement.
               </p>

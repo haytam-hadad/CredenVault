@@ -84,19 +84,6 @@ export default function Notifications() {
     }
   };
 
-  const checkRenewals = async () => {
-    setChecking(true);
-    try {
-      const res = await securityService.checkRenewals();
-      toast.success(res.message);
-      await load();
-      fetchUnreadCount();
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setChecking(false);
-    }
-  };
 
   const unread = notifications.filter((n) => n.status === 'unread');
 
@@ -111,18 +98,14 @@ export default function Notifications() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {unread.length > 0 && (
-            <Button variant="secondary" onClick={markAllRead} loading={markingAll}>
+            <Button variant="secondary" className='text-sm' onClick={markAllRead} loading={markingAll}>
               <CheckCheck className="w-4 h-4" />
               Tout marquer comme lu
             </Button>
           )}
-          <Button variant="secondary" onClick={generateReminders} loading={generating}>
+          <Button variant="primary" className='text-sm' onClick={generateReminders} loading={generating}>
             <Sparkles className="w-4 h-4" />
             Générer les rappels
-          </Button>
-          <Button variant="secondary" onClick={checkRenewals} loading={checking}>
-            <RefreshCw className="w-4 h-4" />
-            Vérifier les renouvellements
           </Button>
         </div>
       </div>
