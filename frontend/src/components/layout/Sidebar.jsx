@@ -118,15 +118,11 @@ export default function Sidebar({ open, onClose }) {
       </nav>
 
       <footer className="px-3 py-4 border-t border-slate-800">
-        <div className="flex items-center gap-1.5 px-3 pb-3 text-slate-600">
-          <ShieldCheck className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-          <span className="text-[10px] font-mono uppercase tracking-widest">AES-256-GCM</span>
-        </div>
         <button
           type="button"
           onClick={handleLogout}
           disabled={isLoggingOut}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isLoggingOut ? (
             <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />

@@ -146,7 +146,7 @@ export default function Navbar({ onMenuClick }) {
                   {isLoggingOut ? (
                     <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                   ) : (
-                    <LogOut className="w-4 h-4" aria-hidden="true" />
+                    <LogOut className="w-4 h-4 text-red-500" aria-hidden="true" />
                   )}
                   {isLoggingOut ? 'Déconnexion…' : 'Déconnexion'}
                 </button>
