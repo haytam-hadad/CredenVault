@@ -41,4 +41,8 @@ export const securityService = {
     api.patch(`/security/notifications/${id}/read`).then((r) => r.data),
   getLogs: () => api.get('/security/logs').then((r) => r.data),
   checkRenewals: () => api.post('/security/password-renewals/check').then((r) => r.data),
+  getUnreadCount: () => api.get('/security/notifications/unread-count').then((r) => r.data),
+  markAllNotificationsRead: () =>
+    api.patch('/security/notifications/read-all').then((r) => r.data),
+  generateReminders: () => api.post('/security/notifications/generate').then((r) => r.data),
 };
