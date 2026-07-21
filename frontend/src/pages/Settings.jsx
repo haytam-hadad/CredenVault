@@ -1,15 +1,29 @@
 import { useEffect, useState } from 'react';
-import { User, Lock, Shield, Bell, AlertTriangle, CheckCircle2, QrCode, Copy, Clock, Calendar } from 'lucide-react';
+import { User, Lock, Shield, Bell, AlertTriangle, CheckCircle2, QrCode, Copy, Clock, Calendar, Eye, EyeOff, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card, Button, Input, Modal } from '../components/ui';
 import PasswordStrength from '../components/accounts/PasswordStrength';
+import { useReauth } from '../components/auth/ReAuthContext';
 import useAuthStore from '../store/authStore';
 import { userService, authService, securityService } from '../services';
 import { validatePassword, formatDate } from '../utils/helpers';
 
+// Mask an email as j•••@e•••.com so it is not shoulder-surfed at rest.
+const maskEmail = (email) => {
+  if (!email || !email.includes('@')) return '••••••••';
+  const [local, domain] = email.split('@');
+  const [name, ...tldParts] = domain.split('.');
+  const tld = tldParts.length ? `.${tldParts.join('.')}` : '';
+  const maskPart = (s) => (s ? `${s[0]}${'•'.repeat(Math.max(3, s.length - 1))}` : '•••');
+  return `${maskPart(local)}@${maskPart(name)}${tld}`;
+};
+
 export default function Settings() {
+  const { requireReauth } = useReauth();
   const { user, updateUser } = useAuthStore();
   const [profile, setProfile] = useState({ firstName: '', lastName: '', email: '' });
+  const [emailRevealed, setEmailRevealed] = useState(false);
+  const [profileUnlocked, setProfileUnlocked] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
@@ -57,6 +71,42 @@ export default function Settings() {
     return () => clearTimeout(timer);
   }, [passwordForm.newPassword]);
 
+  const revealEmail = () => {
+    if (emailRevealed) {
+      setEmailRevealed(false);
+      return;
+    }
+    requireReauth(() => setEmailRevealed(true), {
+      title: 'Afficher l’email',
+      description: 'Confirmez votre identité pour afficher votre adresse email.',
+      actionLabel: 'Afficher',
+    });
+  };
+
+  const unlockProfile = () => {
+    requireReauth(
+      () => {
+        setProfileUnlocked(true);
+        setEmailRevealed(true);
+      },
+      {
+        title: 'Modifier le profil',
+        description: 'Confirmez votre identité pour modifier les informations de votre compte.',
+        actionLabel: 'Continuer',
+      }
+    );
+  };
+
+  const cancelProfileEdit = () => {
+    setProfile({
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      email: user?.email || '',
+    });
+    setProfileUnlocked(false);
+    setEmailRevealed(false);
+  };
+
   const handleProfileSave = async (e) => {
     e.preventDefault();
     setLoading((p) => ({ ...p, profile: true }));
@@ -64,6 +114,8 @@ export default function Settings() {
       const res = await userService.updateProfile(profile);
       updateUser(res.data.user);
       toast.success('Profil mis à jour');
+      setProfileUnlocked(false);
+      setEmailRevealed(false);
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -147,34 +199,73 @@ export default function Settings() {
       </div>
 
       <Card title="Profil" subtitle="Informations personnelles">
-        <form onSubmit={handleProfileSave} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {profileUnlocked ? (
+          <form onSubmit={handleProfileSave} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Prénom"
+                name="firstName"
+                icon={User}
+                value={profile.firstName}
+                onChange={(e) => setProfile((p) => ({ ...p, firstName: e.target.value }))}
+                placeholder="Votre prénom"
+              />
+              <Input
+                label="Nom"
+                name="lastName"
+                value={profile.lastName}
+                onChange={(e) => setProfile((p) => ({ ...p, lastName: e.target.value }))}
+                placeholder="Votre nom"
+              />
+            </div>
             <Input
-              label="Prénom"
-              name="firstName"
-              icon={User}
-              value={profile.firstName}
-              onChange={(e) => setProfile((p) => ({ ...p, firstName: e.target.value }))}
-              placeholder="Votre prénom"
+              label="Email"
+              name="email"
+              type="email"
+              value={profile.email}
+              onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))}
+              placeholder="vous@exemple.com"
             />
-            <Input
-              label="Nom"
-              name="lastName"
-              value={profile.lastName}
-              onChange={(e) => setProfile((p) => ({ ...p, lastName: e.target.value }))}
-              placeholder="Votre nom"
-            />
+            <div className="flex gap-2">
+              <Button type="submit" loading={loading.profile}>Enregistrer</Button>
+              <Button type="button" variant="secondary" onClick={cancelProfileEdit}>Annuler</Button>
+            </div>
+          </form>
+        ) : (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-3 bg-slate-800/50 rounded-lg">
+                <p className="text-xs text-slate-400 mb-1">Prénom</p>
+                <p className="text-slate-100 font-medium">{profile.firstName || '—'}</p>
+              </div>
+              <div className="p-3 bg-slate-800/50 rounded-lg">
+                <p className="text-xs text-slate-400 mb-1">Nom</p>
+                <p className="text-slate-100 font-medium">{profile.lastName || '—'}</p>
+              </div>
+            </div>
+            <div className="p-3 bg-slate-800/50 rounded-lg">
+              <p className="text-xs text-slate-400 mb-1">Email</p>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-slate-100 font-medium font-mono truncate">
+                  {emailRevealed ? profile.email : maskEmail(profile.email)}
+                </span>
+                <button
+                  type="button"
+                  onClick={revealEmail}
+                  className="shrink-0 flex items-center gap-1.5 text-xs font-medium text-brand-400 hover:text-brand-300 transition-colors"
+                  aria-label={emailRevealed ? 'Masquer l’email' : 'Afficher l’email'}
+                >
+                  {emailRevealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {emailRevealed ? 'Masquer' : 'Afficher'}
+                </button>
+              </div>
+            </div>
+            <Button type="button" onClick={unlockProfile}>
+              <Pencil className="w-4 h-4" />
+              Modifier le profil
+            </Button>
           </div>
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            value={profile.email}
-            onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))}
-            placeholder="vous@exemple.com"
-          />
-          <Button type="submit" loading={loading.profile}>Enregistrer</Button>
-        </form>
+        )}
       </Card>
 
       <Card title="Mot de passe" subtitle="Modifier votre mot de passe">

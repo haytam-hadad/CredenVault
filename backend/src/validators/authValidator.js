@@ -40,9 +40,16 @@ const disable2FASchema = z.object({
   }),
 });
 
+const verifyPasswordSchema = z.object({
+  body: z.object({
+    password: z.string().min(1, 'Mot de passe requis'),
+  }),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   verify2FASchema,
   disable2FASchema,
+  verifyPasswordSchema,
 };

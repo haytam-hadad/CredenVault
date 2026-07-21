@@ -8,6 +8,8 @@ export const authService = {
   setup2FA: () => api.post('/auth/2fa/setup').then((r) => r.data),
   verify2FA: (token) => api.post('/auth/2fa/verify', { token }).then((r) => r.data),
   disable2FA: (data) => api.post('/auth/2fa/disable', data).then((r) => r.data),
+  verifyPassword: (password) =>
+    api.post('/auth/verify-password', { password }).then((r) => r.data),
 };
 
 export const userService = {
