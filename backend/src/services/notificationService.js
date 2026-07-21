@@ -16,13 +16,6 @@ const createNotification = async ({
       metadata,
     });
 
-    console.log('[NotificationService] Created:', {
-      id: notification._id,
-      userId,
-      type,
-      message,
-    });
-
     return notification;
   } catch (error) {
     console.error('[NotificationService] Error:', error);

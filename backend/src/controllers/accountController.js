@@ -6,7 +6,7 @@ const { createSecurityLog, getClientInfo } = require('../services/securityLogSer
 
 const getAccounts = async (req, res, next) => {
   try {
-    const { category, search, page = 1, limit = 50 } = req.query;
+    const { category, search, isFavorite, page = 1, limit = 50 } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const pageLimit = Math.min(100, Math.max(1, parseInt(limit, 10) || 50)); // Max 100 items per page
     const skip = (pageNum - 1) * pageLimit;
@@ -14,6 +14,7 @@ const getAccounts = async (req, res, next) => {
     const filter = { userId: req.user._id };
 
     if (category) filter.category = category;
+    if (isFavorite !== undefined) filter.isFavorite = isFavorite === 'true' || isFavorite === true;
     if (search) {
       filter.$or = [
         { serviceName: { $regex: search, $options: 'i' } },

@@ -19,14 +19,10 @@ export default function Favorites() {
   const loadFavorites = async () => {
     try {
       const res = await accountService.getAll({ isFavorite: true });
-      const favoriteAccounts = res.accounts || res.data?.accounts || res.data || [];
-      const filtered = Array.isArray(favoriteAccounts) 
-        ? favoriteAccounts.filter(acc => acc.isFavorite) 
-        : [];
-      setFavorites(filtered);
+      setFavorites(res.data?.accounts || []);
     } catch (error) {
       console.error('Failed to load favorites:', error);
-      toast.error('Failed to load favorites');
+      toast.error('Échec du chargement des favoris');
     } finally {
       setLoading(false);
     }
