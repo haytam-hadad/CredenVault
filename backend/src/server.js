@@ -29,7 +29,7 @@ app.use(
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 500,
   message: { success: false, message: 'Trop de requêtes, réessayez plus tard' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -37,13 +37,13 @@ const limiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 30,
   message: { success: false, message: 'Trop de tentatives de connexion' },
 });
 
 const accountLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 30,
+  max: 100,
   message: { success: false, message: 'Trop d\'opérations sur les comptes' },
 });
 

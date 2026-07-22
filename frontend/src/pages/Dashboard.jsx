@@ -161,7 +161,7 @@ export default function Dashboard() {
  
         <div className="space-y-4">
           <Card 
-            title="Sécurité" 
+            title="Sécurité"
             subtitle={stats?.twoFactorEnabled ? '✓ 2FA activée - Protection maximale' : '⚠ 2FA non activée - Activez-la pour plus de sécurité'}
             className="border-l-4 border-l-emerald-500"
           >

@@ -22,10 +22,12 @@ const links = [
   { to: '/accounts', icon: KeyRound, label: 'Comptes' },
   { to: '/favorites', icon: Heart, label: 'Favoris' },
   { to: '/password-generator', icon: Zap, label: 'Générateur' },
-  { to: '/activity-log', icon: Activity, label: "Journal d'Activité" },
-  { to: '/data-management', icon: Download, label: 'Données' },
   { to: '/notifications', icon: Bell, label: 'Notifications' },
+  { to: '/data-management', icon: Download, label: 'Données' },
+  { to: '/activity-log', icon: Activity, label: "Journal d'Activité" },
   { to: '/settings', icon: Settings, label: 'Paramètres' },
+
+
 ];
 
 export default function Sidebar({ open, onClose }) {
@@ -65,7 +67,7 @@ export default function Sidebar({ open, onClose }) {
 
   const navContent = (
     <>
-      <header className="relative flex items-center gap-2 bg-gradient-to-b from-brand-500/10 to-transparent px-4 py-6 border-b border-slate-800">
+      <header className="relative flex items-center gap-2 px-4 py-5 border-b border-b-slate-800">
         <img src="/logo.png" alt="Logo CredenVault" className="w-9 h-9 object-contain" />
         <div>
           <h1 className="text-lg font-bold text-slate-100 tracking-tight">CredenVault</h1>
@@ -74,7 +76,7 @@ export default function Sidebar({ open, onClose }) {
               <span className="motion-reduce:hidden absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
             </span>
-            <p className="text-[10px] font-mono uppercase tracking-widest text-emerald-400/90">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-emerald-500">
               Session chiffrée
             </p>
           </div>

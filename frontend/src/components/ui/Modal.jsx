@@ -25,11 +25,11 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
  
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/10 backdrop-blur-sm" onClick={onClose} />
       <div
-        className={`relative w-full ${sizes[size]} glass-card p-6 animate-slide-up max-h-[90vh] overflow-y-auto`}
+        className={`relative w-full ${sizes[size]}  bg-slate-900/100 backdrop-blur-lg border border-slate-800/80 rounded-2xl shadow-md p-6 animate-slide-up max-h-[90vh] overflow-y-auto`}
       >
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-slate-100">{title}</h2>
           <button
             onClick={onClose}

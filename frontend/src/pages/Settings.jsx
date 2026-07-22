@@ -308,10 +308,10 @@ export default function Settings() {
         {!user?.twoFactorEnabled ? (
           <div className="space-y-4">
             <div className="p-4 bg-yellow-600/10 border border-yellow-600/30 rounded-lg flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium text-yellow-300 mb-1">2FA non activée</p>
-                <p className="text-yellow-200/80">
+                <p className="font-medium text-yellow-500 mb-1">2FA non activée</p>
+                <p className="text-yellow-500">
                   L'authentification à deux facteurs renforce considérablement la sécurité de votre compte.
                 </p>
               </div>
@@ -449,8 +449,8 @@ export default function Settings() {
       >
         {twoFAData && (
           <div className="space-y-5">
-            <div className="bg-blue-600/10 border border-blue-600/30 rounded-lg p-4 text-sm text-blue-200">
-              <p className="font-medium mb-2">📱 Étape 1 : Téléchargez une application authenticateur</p>
+            <div className="bg-blue-600/10 border border-blue-600/20 rounded-lg p-4 text-sm text-blue-500">
+              <p className="font-bold mb-2">Étape 1 : Téléchargez une application authenticateur</p>
               <p className="text-xs">Google Authenticator, Authy, ou Microsoft Authenticator (disponible sur iOS/Android)</p>
             </div>
 

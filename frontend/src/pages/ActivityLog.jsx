@@ -161,7 +161,7 @@ export default function ActivityLog() {
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors disabled:opacity-50"
+          className="p-2 rounded-lg bg-brand-500 hover:bg-slate-700 text-slate-900 hover:text-slate-200  disabled:opacity-50"
           aria-label="Actualiser"
         >
           <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
@@ -182,7 +182,7 @@ export default function ActivityLog() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-colors flex items-center gap-2 ${
+            className={`px-3 py-2 rounded-lg whitespace-nowrap text-xs font-medium transition-colors flex items-center gap-2 ${
               filter === f
                 ? 'bg-brand-600 text-slate-100'
                 : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
@@ -218,7 +218,7 @@ export default function ActivityLog() {
             {filteredActivities.map((activity, idx) => (
               <div
                 key={`${activity.id || activity.createdAt}-${idx}`}
-                className="flex items-start gap-4 p-4 rounded-lg hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-700"
+                className="flex items-start gap-4 p-2 rounded-lg hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-700"
                 role="article"
               >
                 <div
@@ -232,7 +232,7 @@ export default function ActivityLog() {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-1">
                     <div>
                       <p className="text-slate-100 font-medium">
                         {getActionLabel(activity.action)}
@@ -252,11 +252,11 @@ export default function ActivityLog() {
                 </div>
 
                 <time
-                  className="flex items-center gap-2 text-xs text-slate-500 flex-shrink-0"
+                  className="flex items-center gap-2 text-xs text-slate-400 flex-shrink-0"
                   dateTime={activity.createdAt}
                   title={formatDate(activity.createdAt)}
                 >
-                  <Calendar className="w-3.5 h-3.5" />
+                  <Calendar className="w-3 h-3" />
                   <span className="whitespace-nowrap">{formatDate(activity.createdAt)}</span>
                 </time>
               </div>

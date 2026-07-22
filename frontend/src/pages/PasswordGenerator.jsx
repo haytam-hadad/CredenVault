@@ -78,11 +78,11 @@ export default function PasswordGenerator() {
   };
 
   const strengthColors = {
-    'very-weak': 'text-red-500 bg-red-600/10 border-red-500/30',
-    'weak': 'text-red-400 bg-red-600/10 border-red-500/30',
-    'fair': 'text-yellow-400 bg-yellow-600/10 border-yellow-500/30',
-    'strong': 'text-blue-400 bg-blue-600/10 border-blue-500/30',
-    'very-strong': 'text-emerald-400 bg-emerald-600/10 border-emerald-500/30',
+    'very-weak': 'text-red-500 bg-red-600/5 border-red-500/30',
+    'weak': 'text-red-400 bg-red-600/5 border-red-500/30',
+    'fair': 'text-yellow-400 bg-yellow-600/5 border-yellow-500/30',
+    'strong': 'text-blue-400 bg-blue-600/5 border-blue-500/30',
+    'very-strong': 'text-emerald-400 bg-emerald-600/5 border-emerald-500/30',
   };
 
   const strengthLabels = {

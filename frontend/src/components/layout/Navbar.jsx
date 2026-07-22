@@ -230,14 +230,14 @@ export default function Navbar({ onMenuClick }) {
               onClick={() => setMenuOpen((v) => !v)}
               aria-haspopup="menu"
               aria-expanded={menuOpen}
-              className="flex items-center gap-2 p-1 pr-2 rounded-lg hover:bg-slate-800 transition-colors"
+              className="flex items-center gap-4 p-2 rounded-lg hover:bg-slate-800 transition-colors"
             >
               <div className="w-9 h-9 rounded-full bg-brand-600/60 border border-brand-500/30 flex items-center justify-center shrink-0">
                 <span className="text-white font-semibold text-md">{initial}</span>
               </div>
               <div className="text-left hidden sm:block">
                 <p className="text-sm font-medium text-slate-100 leading-tight">{displayName}</p>
-                <p className="text-xs text-slate-500 leading-tight">{user?.email}</p>
+                {/* <p className="text-xs text-slate-500 leading-tight">{user?.email}</p> */}
               </div>
               <ChevronDown
                 className={`w-4 h-4 text-slate-500 transition-transform hidden sm:block ${
@@ -254,7 +254,7 @@ export default function Navbar({ onMenuClick }) {
               >
                 <div className="px-3 py-2 border-b border-slate-800 sm:hidden">
                   <p className="text-sm font-medium text-slate-100">{displayName}</p>
-                  <p className="text-xs text-slate-500">{user?.email}</p>
+                  {/* <p className="text-xs text-slate-500">{user?.email}</p> */}
                 </div>
                 <Link
                   to="/settings"
