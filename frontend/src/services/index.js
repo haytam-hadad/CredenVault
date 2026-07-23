@@ -40,6 +40,8 @@ export const securityService = {
   getDashboard: () => api.get('/security/dashboard').then((r) => r.data),  
   getActivityLog: () => api.get('/security/logs').then((r) => r.data),  
   getNotifications: (params) => api.get('/security/notifications', { params }).then((r) => r.data),  
+  deleteNotification: (id) =>  
+    api.delete(`/security/notifications/${id}`).then((r) => r.data),
   markNotificationRead: (id) =>  
     api.patch(`/security/notifications/${id}/read`).then((r) => r.data),  
   checkRenewals: () => api.post('/security/password-renewals/check').then((r) => r.data),  

@@ -175,7 +175,7 @@ const getTransporter = () => {
       pass: smtp.pass,  
     },  
     tls: {  
-      rejectUnauthorized: false,  
+      rejectUnauthorized: process.env.NODE_ENV === 'production',  
     },  
   });  
   
