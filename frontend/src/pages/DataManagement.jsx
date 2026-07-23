@@ -29,55 +29,48 @@ export default function DataManagement() {
       .catch(() => setAccountCount(0));  
   }, []);  
   
-  // Performs the actual export once we have a confirmed master password.  
-  const runExport = async (password) => {  
-    if (!password) {  
-      toast.error('Mot de passe requis pour exporter');  
-      return;  
-    }  
-    try {  
-      setExporting(true);  
-      const res = await accountService.exportData(password);  
-      const payload = res.data?.accounts != null ? res.data : { accounts: res.data || [] };  
-      const accounts = payload.accounts || [];  
-  
-      const exportFile = {  
-        version: payload.version || 1,  
-        exportedAt: payload.exportedAt || new Date().toISOString(),  
-        accountCount: accounts.length,  
-        accounts,  
-      };  
-  
-      const dataStr = JSON.stringify(exportFile, null, 2);  
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });  
-      const url = URL.createObjectURL(dataBlob);  
-      const link = document.createElement('a');  
-      link.href = url;  
-      link.download = `credenvault-backup-${new Date().toISOString().split('T')[0]}.json`;  
-      document.body.appendChild(link);  
-      link.click();  
-      document.body.removeChild(link);  
-      URL.revokeObjectURL(url);  
-  
-      toast.success(  
-        accounts.length  
-          ? `${accounts.length} compte(s) exporté(s)`  
-          : 'Sauvegarde vide exportée'  
-      );  
-    } catch (error) {  
-      toast.error(error.message || "Échec de l'exportation");  
-    } finally {  
-      setExporting(false);  
-    }  
-  };  
-  
   const handleExport = () => {  
+    // Exporting downloads every decrypted password, so gate it behind re-auth.  
     requireReauth(  
-      (password) => runExport(password),  
+      async () => {  
+        try {  
+          setExporting(true);  
+          const res = await accountService.exportData();  
+          const payload = res.data?.accounts != null ? res.data : { accounts: res.data || [] };  
+          const accounts = payload.accounts || [];  
+  
+          const exportFile = {  
+            version: payload.version || 1,  
+            exportedAt: payload.exportedAt || new Date().toISOString(),  
+            accountCount: accounts.length,  
+            accounts,  
+          };  
+  
+          const dataStr = JSON.stringify(exportFile, null, 2);  
+          const dataBlob = new Blob([dataStr], { type: 'application/json' });  
+          const url = URL.createObjectURL(dataBlob);  
+          const link = document.createElement('a');  
+          link.href = url;  
+          link.download = `credenvault-backup-${new Date().toISOString().split('T')[0]}.json`;  
+          document.body.appendChild(link);  
+          link.click();  
+          document.body.removeChild(link);  
+          URL.revokeObjectURL(url);  
+  
+          toast.success(  
+            accounts.length  
+              ? `${accounts.length} compte(s) exporté(s)`  
+              : 'Sauvegarde vide exportée'  
+          );  
+        } catch (error) {  
+          toast.error(error.message || "Échec de l'exportation");  
+        } finally {  
+          setExporting(false);  
+        }  
+      },  
       {  
-        title: 'Confirmer l’exportation',  
-        description:  
-          'Cette action télécharge tous vos mots de passe en clair. Confirmez votre identité pour continuer.',  
+        title: 'Exporter les données',  
+        description: 'Confirmez votre identité pour télécharger une sauvegarde de tous vos mots de passe.',  
         actionLabel: 'Exporter',  
       }  
     );  
