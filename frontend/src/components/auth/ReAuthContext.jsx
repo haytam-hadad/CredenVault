@@ -14,8 +14,8 @@ export function ReAuthProvider({ children }) {
   
   // Gate a sensitive action behind re-authentication. If the user verified  
   // recently, `onSuccess` runs immediately; otherwise the modal is shown.  
-  // `onSuccess` receives the freshly-entered password when the modal is used,  
-  // or `undefined` when the grace-period shortcut is taken.  
+  // `onSuccess` receives the verified password as its argument (undefined  
+  // when run from within the grace window, since no modal is shown).  
   const requireReauth = useCallback((onSuccess, options = {}) => {  
     if (Date.now() < verifiedUntil.current) {  
       onSuccess();  
