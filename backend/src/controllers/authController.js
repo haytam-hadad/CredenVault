@@ -43,7 +43,7 @@ const register = async (req, res, next) => {
       lastName,  
     });  
   
-    // In-app notification  
+    // In-app welcome notification (kept)  
     await createNotification({  
       userId: user._id,  
       type: 'system',  
@@ -103,19 +103,6 @@ const login = async (req, res, next) => {
       return next(new AppError('Email ou mot de passe incorrect', 401));  
     }  
   
-    // Reject deactivated ("deleted") accounts.  
-    if (!user.isActive) {  
-      await createSecurityLog({  
-        userId: user._id,  
-        action: 'login-failed',  
-        ...clientInfo,  
-        success: false,  
-        details: 'Compte désactivé',  
-      });  
-  
-      return next(new AppError('Ce compte a été désactivé', 403));  
-    }  
-  
     if (user.twoFactorEnabled) {  
       if (!otpToken) {  
         return res.status(200).json({  
@@ -154,21 +141,10 @@ const login = async (req, res, next) => {
       ...clientInfo,  
     });  
   
-    // Login notification  
-    await createNotification({  
-      userId: user._id,  
-      type: 'security-alert',  
-      message: `Nouvelle connexion détectée depuis ${clientInfo.ipAddress || 'appareil inconnu'}`,  
-      metadata: {  
-        action: 'login',  
-        ip: clientInfo.ipAddress,  
-        userAgent: clientInfo.userAgent,  
-      },  
-    });  
-  
     const settings = await SecuritySettings.findOne({ userId: user._id });  
   
-    if (settings?.loginAlertsEnabled) {  
+    // Login alert email — respects the master email switch as well  
+    if (settings?.emailNotificationsEnabled && settings?.loginAlertsEnabled) {  
       sendLoginAlert(user, logEntry)  
         .catch((err) => console.error('[Email] login alert failed:', err));  
     }  
@@ -263,14 +239,6 @@ const verify2FA = async (req, res, next) => {
       ...clientInfo,  
     });  
   
-    // Notification  
-    await createNotification({  
-      userId: user._id,  
-      type: 'security-alert',  
-      message: "L'authentification à deux facteurs a été activée.",  
-      metadata: { action: '2fa-enabled' },  
-    });  
-  
     res.json({  
       success: true,  
       message: 'Authentification à deux facteurs activée',  
@@ -327,14 +295,6 @@ const disable2FA = async (req, res, next) => {
       ...clientInfo,  
     });  
   
-    // Notification  
-    await createNotification({  
-      userId: user._id,  
-      type: 'security-alert',  
-      message: "L'authentification à deux facteurs a été désactivée.",  
-      metadata: { action: '2fa-disabled' },  
-    });  
-  
     res.json({  
       success: true,  
       message: 'Authentification à deux facteurs désactivée',  
@@ -387,17 +347,6 @@ const logout = async (req, res, next) => {
       userId: req.user._id,  
       action: 'logout',  
       ...clientInfo,  
-    });  
-  
-    // Notification  
-    await createNotification({  
-      userId: req.user._id,  
-      type: 'security-alert',  
-      message: 'Votre session a été fermée.',  
-      metadata: {  
-        action: 'logout',  
-        ip: clientInfo.ipAddress,  
-      },  
     });  
   
     clearTokenCookie(res);  

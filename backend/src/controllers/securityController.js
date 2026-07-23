@@ -1,3 +1,4 @@
+// backend/src/controllers/securityController.js  
 const Account = require('../models/Account');  
 const Notification = require('../models/Notification');  
 const SecurityLog = require('../models/SecurityLog');  
@@ -134,7 +135,6 @@ const markNotificationRead = async (req, res, next) => {
   }  
 };  
   
-// NEW: delete a single notification  
 const deleteNotification = async (req, res, next) => {  
   try {  
     const notification = await Notification.findOneAndDelete({  
@@ -204,32 +204,14 @@ const checkPasswordRenewals = async (req, res, next) => {
   
     await sendPasswordRenewalReminder(req.user, outdatedAccounts);  
   
-    // Skip accounts that already have an unread password-renewal notification  
-    // so repeated calls don't spam duplicate in-app notifications.  
-    const existingUnread = await Notification.find({  
+    const notifications = outdatedAccounts.map((account) => ({  
       userId,  
-      status: 'unread',  
+      message: `Le mot de passe de "${account.serviceName}" n'a pas été changé depuis ${reminderDays} jours`,  
       type: 'password-renewal',  
-      relatedAccountId: { $ne: null },  
-    }).select('relatedAccountId');  
+      relatedAccountId: account._id,  
+    }));  
   
-    const existingIds = new Set(  
-      existingUnread.map((n) => String(n.relatedAccountId))  
-    );  
-  
-    const notifications = outdatedAccounts  
-      .filter((account) => !existingIds.has(String(account._id)))  
-      .map((account) => ({  
-        userId,  
-        message: `Le mot de passe de "${account.serviceName}" n'a pas été changé depuis ${reminderDays} jours`,  
-        type: 'password-renewal',  
-        relatedAccountId: account._id,  
-        metadata: { serviceName: account.serviceName },  
-      }));  
-  
-    if (notifications.length > 0) {  
-      await Notification.insertMany(notifications);  
-    }  
+    await Notification.insertMany(notifications);  
   
     res.json({  
       success: true,  
@@ -290,6 +272,8 @@ const generateReminderNotifications = async (req, res, next) => {
     );  
     const weakAccounts = accounts.filter((a) => isPasswordWeak(a.passwordStrength));  
   
+    // Skip accounts that already have an unread notification of the same type  
+    // so repeated generation does not spam duplicates.  
     const existingUnread = await Notification.find({  
       userId,  
       status: 'unread',  

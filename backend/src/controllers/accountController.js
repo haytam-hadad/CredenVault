@@ -4,8 +4,14 @@ const User = require('../models/User');
 const SecuritySettings = require('../models/SecuritySettings');  
 const AppError = require('../utils/AppError');  
 const { encrypt, decrypt } = require('../services/encryptionService');  
-const { evaluatePasswordStrength, isPasswordWeak } = require('../services/passwordService');  
+const {  
+  evaluatePasswordStrength,  
+  isPasswordWeak,  
+} = require('../services/passwordService');  
 const { createSecurityLog, getClientInfo } = require('../services/securityLogService');  
+  
+// Escape user input before using it inside a MongoDB $regex (prevents ReDoS / regex injection)  
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');  
   
 const getAccounts = async (req, res, next) => {  
   try {  
@@ -19,9 +25,10 @@ const getAccounts = async (req, res, next) => {
     if (category) filter.category = category;  
     if (isFavorite !== undefined) filter.isFavorite = isFavorite === 'true' || isFavorite === true;  
     if (search) {  
+      const safe = escapeRegex(search);  
       filter.$or = [  
-        { serviceName: { $regex: search, $options: 'i' } },  
-        { username: { $regex: search, $options: 'i' } },  
+        { serviceName: { $regex: safe, $options: 'i' } },  
+        { username: { $regex: safe, $options: 'i' } },  
       ];  
     }  
   
@@ -251,6 +258,16 @@ const importAccounts = async (req, res, next) => {
     const skipped = [];  
   
     for (const acc of accounts) {  
+      // Validation: skip entries missing required fields so encrypt(undefined) never runs  
+      if (!acc?.serviceName || !acc?.username || !acc?.password) {  
+        skipped.push({  
+          serviceName: acc?.serviceName,  
+          username: acc?.username,  
+          reason: 'invalid',  
+        });  
+        continue;  
+      }  
+  
       const existing = await Account.findOne({  
         userId: req.user._id,  
         serviceName: acc.serviceName,  
@@ -258,7 +275,11 @@ const importAccounts = async (req, res, next) => {
       });  
   
       if (existing) {  
-        skipped.push({ serviceName: acc.serviceName, username: acc.username });  
+        skipped.push({  
+          serviceName: acc.serviceName,  
+          username: acc.username,  
+          reason: 'duplicate',  
+        });  
         continue;  
       }  
   
@@ -291,7 +312,7 @@ const importAccounts = async (req, res, next) => {
   
     res.status(201).json({  
       success: true,  
-      message: `${imported.length} compte(s) importé(s)${skipped.length ? `, ${skipped.length} doublon(s) ignoré(s)` : ''}`,  
+      message: `${imported.length} compte(s) importé(s)${skipped.length ? `, ${skipped.length} ignoré(s)` : ''}`,  
       data: { imported, skipped, importedCount: imported.length, skippedCount: skipped.length },  
     });  
   } catch (error) {  
@@ -304,8 +325,9 @@ const getAccountStats = async (req, res, next) => {
     const userId = req.user._id;  
     const accounts = await Account.find({ userId });  
   
-    const strongPasswords = accounts.filter((a) => a.passwordStrength?.score >= 3).length;  
-    const weakPasswords = accounts.filter((a) => isPasswordWeak(a.passwordStrength)).length;  
+    // Match getDashboardStats exactly so both endpoints report identical scores  
+    const strongPasswords = accounts.filter((a) => a.passwordStrength?.score >= 3);  
+    const weakPasswords = accounts.filter((a) => isPasswordWeak(a.passwordStrength));  
   
     const settings = await SecuritySettings.findOne({ userId });  
     const reminderDays = settings?.passwordRenewalReminderDays || 90;  
@@ -314,28 +336,25 @@ const getAccountStats = async (req, res, next) => {
   
     const outdatedPasswords = accounts.filter(  
       (a) => new Date(a.lastPasswordChange) < cutoffDate  
-    ).length;  
+    );  
   
-    // Same formula as getDashboardStats so the two endpoints agree.  
-    const rawScore = accounts.length  
+    const securityScore = accounts.length  
       ? Math.round(  
-          (strongPasswords / accounts.length) * 50 +  
-            ((accounts.length - outdatedPasswords) / accounts.length) * 30 +  
+          (strongPasswords.length / accounts.length) * 50 +  
+            ((accounts.length - outdatedPasswords.length) / accounts.length) * 30 +  
             (req.user.twoFactorEnabled ? 20 : 0)  
         )  
       : req.user.twoFactorEnabled  
         ? 20  
         : 0;  
   
-    const securityScore = Math.min(100, rawScore);  
-  
     res.json({  
       success: true,  
       data: {  
         totalAccounts: accounts.length,  
-        strongPasswords,  
-        weakPasswords,  
-        outdatedPasswords,  
+        strongPasswords: strongPasswords.length,  
+        weakPasswords: weakPasswords.length,  
+        outdatedPasswords: outdatedPasswords.length,  
         securityScore,  
         twoFactorEnabled: req.user.twoFactorEnabled || false,  
       },  

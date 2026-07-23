@@ -55,7 +55,7 @@ export default function Notifications() {
     }  
   };  
   
-  const removeNotification = async (id) => {  
+  const deleteNotif = async (id) => {  
     try {  
       await securityService.deleteNotification(id);  
       setNotifications((prev) => prev.filter((n) => n._id !== id));  
@@ -167,7 +167,7 @@ export default function Notifications() {
                   </button>  
                 )}  
                 <button  
-                  onClick={() => removeNotification(notif._id)}  
+                  onClick={() => deleteNotif(notif._id)}  
                   className="p-2 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg"  
                   title="Supprimer"  
                 >  

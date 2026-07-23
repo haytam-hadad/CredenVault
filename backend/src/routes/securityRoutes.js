@@ -1,3 +1,4 @@
+// backend/src/routes/securityRoutes.js  
 const express = require('express');  
 const {  
   checkPasswordStrength,  

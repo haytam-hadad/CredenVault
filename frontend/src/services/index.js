@@ -1,3 +1,4 @@
+// frontend/src/services/index.js  
 import api from './api';  
   
 export const authService = {  
