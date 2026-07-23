@@ -326,8 +326,8 @@ export default function Settings() {
             <div className="p-4 bg-emerald-600/10 border border-emerald-600/30 rounded-lg flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium text-emerald-300 mb-1">2FA activée ✓</p>
-                <p className="text-emerald-200/80">
+                <p className="font-medium text-emerald-400 mb-1">2FA activée ✓</p>
+                <p className="text-emerald-300">
                   Votre compte est protégé par une authentification basée sur OTP (One-Time Password).
                 </p>
               </div>

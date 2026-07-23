@@ -2,8 +2,8 @@ const User = require('../models/User');
 const SecuritySettings = require('../models/SecuritySettings');
 const AppError = require('../utils/AppError');
 const { createSecurityLog, getClientInfo } = require('../services/securityLogService');
-const { createNotification } = require('../services/notificationService');
-
+const { createNotification } = require('../services/notificationService');  
+const { sendPasswordChangedEmail } = require('../services/emailService');
 
 const getProfile = async (req, res) => {
   res.json({
@@ -107,7 +107,12 @@ const changePassword = async (req, res, next) => {
       },
     });
 
-
+    sendPasswordChangedEmail(user, {  
+      createdAt: new Date(),  
+      ipAddress: clientInfo.ipAddress,  
+    }).catch((err) =>  
+      console.error('[Email] password changed failed:', err)  
+    );
 
     res.json({
       success: true,

@@ -83,8 +83,9 @@ const register = async (req, res, next) => {
     });
 
 
-    sendWelcomeEmail(user).catch(() => {});
-
+    sendWelcomeEmail(user).catch((err) =>  
+      console.error('[Email] welcome failed:', err)  
+    );
 
     const token = generateToken(user._id);
 
@@ -264,8 +265,8 @@ const login = async (req, res, next) => {
 
     if (settings?.loginAlertsEnabled) {
 
-      sendLoginAlert(user, logEntry)
-        .catch(() => {});
+    sendLoginAlert(user, logEntry)  
+        .catch((err) => console.error('[Email] login alert failed:', err));
 
     }
 
