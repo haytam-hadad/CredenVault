@@ -126,7 +126,6 @@ export default function Accounts() {
   };  
   
   const handleEdit = (account) => {  
-    // Editing reveals the decrypted password, so gate it behind re-auth.  
     requireReauth(  
       async () => {  
         try {  
@@ -331,9 +330,6 @@ export default function Accounts() {
                 >  
                   <ChevronLeft className="w-4 h-4" />  
                 </Button>  
-                <div className="px-4 py-2 bg-slate-800/50 rounded-lg text-sm font-medium">  
-                  {page} / {pageInfo.pages}  
-                </div>  
                 <Button  
                   onClick={() => setPage(p => Math.min(pageInfo.pages, p + 1))}  
                   disabled={page === pageInfo.pages}  
@@ -349,15 +345,16 @@ export default function Accounts() {
   
       <Modal  
         isOpen={modalOpen}  
-        onClose={() => { setModalOpen(false); setEditing(null); }}  
-        title={editing ? 'Modifier le compte' : 'Nouveau compte'}  
-        size="lg"  
+        onClose={() => {  
+          setModalOpen(false);  
+          setEditing(null);  
+        }}  
+        title={editing ? 'Modifier le compte' : 'Ajouter un compte'}  
       >  
         <AccountForm  
-          initial={editing}  
+          initialData={editing}  
           onSubmit={editing ? handleUpdate : handleCreate}  
-          onCancel={() => { setModalOpen(false); setEditing(null); }}  
-          loading={submitting}  
+          submitting={submitting}  
         />  
       </Modal>  
     </div>  
