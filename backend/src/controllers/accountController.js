@@ -1,12 +1,11 @@
 // backend/src/controllers/accountController.js  
 const Account = require('../models/Account');  
+const User = require('../models/User');  
+const SecuritySettings = require('../models/SecuritySettings');  
 const AppError = require('../utils/AppError');  
 const { encrypt, decrypt } = require('../services/encryptionService');  
-const { evaluatePasswordStrength } = require('../services/passwordService');  
+const { evaluatePasswordStrength, isPasswordWeak } = require('../services/passwordService');  
 const { createSecurityLog, getClientInfo } = require('../services/securityLogService');  
-  
-// P3: escape user input before using it inside a MongoDB $regex  
-const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');  
   
 const getAccounts = async (req, res, next) => {  
   try {  
@@ -20,10 +19,9 @@ const getAccounts = async (req, res, next) => {
     if (category) filter.category = category;  
     if (isFavorite !== undefined) filter.isFavorite = isFavorite === 'true' || isFavorite === true;  
     if (search) {  
-      const safe = escapeRegex(search);  
       filter.$or = [  
-        { serviceName: { $regex: safe, $options: 'i' } },  
-        { username: { $regex: safe, $options: 'i' } },  
+        { serviceName: { $regex: search, $options: 'i' } },  
+        { username: { $regex: search, $options: 'i' } },  
       ];  
     }  
   
@@ -191,6 +189,20 @@ const deleteAccount = async (req, res, next) => {
   
 const exportAccounts = async (req, res, next) => {  
   try {  
+    // Re-authentication: bulk export reveals EVERY password in cleartext,  
+    // so require the master password again (same check as /auth/verify-password).  
+    const { password } = req.body || {};  
+  
+    if (!password) {  
+      return next(new AppError('Mot de passe requis pour exporter vos données', 400));  
+    }  
+  
+    const user = await User.findById(req.user._id).select('+password');  
+  
+    if (!user || !(await user.comparePassword(password))) {  
+      return next(new AppError('Mot de passe incorrect', 401));  
+    }  
+  
     const accounts = await Account.find({ userId: req.user._id });  
   
     const exportAccountsList = accounts.map((acc) => ({  
@@ -239,16 +251,6 @@ const importAccounts = async (req, res, next) => {
     const skipped = [];  
   
     for (const acc of accounts) {  
-      // P4: validate required fields before doing any work  
-      if (!acc?.serviceName || !acc?.username || !acc?.password) {  
-        skipped.push({  
-          serviceName: acc?.serviceName,  
-          username: acc?.username,  
-          reason: 'invalid',  
-        });  
-        continue;  
-      }  
-  
       const existing = await Account.findOne({  
         userId: req.user._id,  
         serviceName: acc.serviceName,  
@@ -256,7 +258,7 @@ const importAccounts = async (req, res, next) => {
       });  
   
       if (existing) {  
-        skipped.push({ serviceName: acc.serviceName, username: acc.username, reason: 'duplicate' });  
+        skipped.push({ serviceName: acc.serviceName, username: acc.username });  
         continue;  
       }  
   
@@ -289,7 +291,7 @@ const importAccounts = async (req, res, next) => {
   
     res.status(201).json({  
       success: true,  
-      message: `${imported.length} compte(s) importé(s)${skipped.length ? `, ${skipped.length} ignoré(s)` : ''}`,  
+      message: `${imported.length} compte(s) importé(s)${skipped.length ? `, ${skipped.length} doublon(s) ignoré(s)` : ''}`,  
       data: { imported, skipped, importedCount: imported.length, skippedCount: skipped.length },  
     });  
   } catch (error) {  
@@ -299,23 +301,33 @@ const importAccounts = async (req, res, next) => {
   
 const getAccountStats = async (req, res, next) => {  
   try {  
-    const accounts = await Account.find({ userId: req.user._id });  
+    const userId = req.user._id;  
+    const accounts = await Account.find({ userId });  
   
     const strongPasswords = accounts.filter((a) => a.passwordStrength?.score >= 3).length;  
-    const weakPasswords = accounts.filter((a) => a.passwordStrength?.score < 2).length;  
-    const outdatedPasswords = accounts.filter((a) => {  
-      const monthsOld = (Date.now() - a.lastPasswordChange) / (1000 * 60 * 60 * 24 * 30);  
-      return monthsOld > 3;  
-    }).length;  
+    const weakPasswords = accounts.filter((a) => isPasswordWeak(a.passwordStrength)).length;  
   
-    // P5: factor outdatedPasswords into the score (penalty up to 20 points), clamped to 0  
-    const outdatedRatio = accounts.length === 0 ? 0 : outdatedPasswords / accounts.length;  
+    const settings = await SecuritySettings.findOne({ userId });  
+    const reminderDays = settings?.passwordRenewalReminderDays || 90;  
+    const cutoffDate = new Date();  
+    cutoffDate.setDate(cutoffDate.getDate() - reminderDays);  
   
-    const securityScore = accounts.length === 0 ? 0 : Math.max(0, Math.round(  
-      ((strongPasswords * 100) / accounts.length) * 0.6 +  
-      (weakPasswords === 0 ? 100 : 50) * 0.4 -  
-      outdatedRatio * 20  
-    ));  
+    const outdatedPasswords = accounts.filter(  
+      (a) => new Date(a.lastPasswordChange) < cutoffDate  
+    ).length;  
+  
+    // Same formula as getDashboardStats so the two endpoints agree.  
+    const rawScore = accounts.length  
+      ? Math.round(  
+          (strongPasswords / accounts.length) * 50 +  
+            ((accounts.length - outdatedPasswords) / accounts.length) * 30 +  
+            (req.user.twoFactorEnabled ? 20 : 0)  
+        )  
+      : req.user.twoFactorEnabled  
+        ? 20  
+        : 0;  
+  
+    const securityScore = Math.min(100, rawScore);  
   
     res.json({  
       success: true,  
