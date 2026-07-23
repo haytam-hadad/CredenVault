@@ -10,7 +10,7 @@ console.log('[EmailService] SMTP config loaded:', {
 });  
   
 // Frontend URL used for CTA links (falls back to CORS origin, then localhost)  
-const FRONTEND_URL = process.env.FRONTEND_URL || corsOrigin || 'http://localhost:3000';  
+const FRONTEND_URL = process.env.FRONTEND_URL || corsOrigin || 'http://localhost:5173';  
   
 // =======================================  
 // Brand palette (matches frontend/tailwind.config.js)  

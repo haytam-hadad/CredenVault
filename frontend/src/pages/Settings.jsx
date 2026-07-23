@@ -381,65 +381,48 @@ export default function Settings() {
         </Card>
       )}
 
-      {settings && (
-        <Card title="Paramètres de sécurité" subtitle="Notification et politique de session">
-          <div className="space-y-5">
-            <div className="space-y-4">
-              {[
-                { key: 'emailNotificationsEnabled', label: 'Notifications par email', icon: Bell },
-                { key: 'loginAlertsEnabled', label: 'Alertes de connexion', icon: Shield },
-                { key: 'requireTwoFactorForSensitiveActions', label: 'Exiger 2FA pour les actions sensibles', icon: Shield },
-              ].map(({ key, label, icon: Icon }) => (
-                <label key={key} className="flex items-center justify-between cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <Icon className="w-4 h-4 text-slate-500" />
-                    <span className="text-sm text-slate-300">{label}</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={settings[key]}
-                    onChange={(e) => handleSettingsChange(key, e.target.checked)}
-                    className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-brand-600 focus:ring-brand-500"
-                  />
-                </label>
-              ))}
-            </div>
-
-            <div className="border-t border-slate-700 pt-4 space-y-3">
-              <div className="space-y-1.5">
-                <label className="text-sm text-slate-300">
-                  Rappel de renouvellement (jours) : <span className="text-brand-400 font-semibold">{settings.passwordRenewalReminderDays}</span>
-                </label>
-                <input
-                  type="range"
-                  min={30}
-                  max={365}
-                  step={30}
-                  value={settings.passwordRenewalReminderDays}
-                  onChange={(e) => handleSettingsChange('passwordRenewalReminderDays', Number(e.target.value))}
-                  className="w-full accent-brand-500"
-                />
-                <p className="text-xs text-slate-500">Renouveler les mots de passe tous les {settings.passwordRenewalReminderDays} jours</p>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-sm text-slate-300">
-                  Délai d'inactivité (minutes) : <span className="text-brand-400 font-semibold">{settings.sessionTimeoutMinutes}</span>
-                </label>
-                <input
-                  type="range"
-                  min={15}
-                  max={1440}
-                  step={15}
-                  value={settings.sessionTimeoutMinutes}
-                  onChange={(e) => handleSettingsChange('sessionTimeoutMinutes', Number(e.target.value))}
-                  className="w-full accent-brand-500"
-                />
-                <p className="text-xs text-slate-500">Déconnecter après {settings.sessionTimeoutMinutes} minutes d'inactivité</p>
-              </div>
-            </div>
-          </div>
-        </Card>
+{settings && (  
+        <Card title="Paramètres de sécurité" subtitle="Notification et politique de session">  
+          <div className="space-y-5">  
+            <div className="space-y-4">  
+              {[  
+                { key: 'emailNotificationsEnabled', label: 'Notifications par email', icon: Bell },  
+                { key: 'loginAlertsEnabled', label: 'Alertes de connexion', icon: Shield },  
+              ].map(({ key, label, icon: Icon }) => (  
+                <label key={key} className="flex items-center justify-between cursor-pointer">  
+                  <div className="flex items-center gap-3">  
+                    <Icon className="w-4 h-4 text-slate-500" />  
+                    <span className="text-sm text-slate-300">{label}</span>  
+                  </div>  
+                  <input  
+                    type="checkbox"  
+                    checked={settings[key]}  
+                    onChange={(e) => handleSettingsChange(key, e.target.checked)}  
+                    className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-brand-600 focus:ring-brand-500"  
+                  />  
+                </label>  
+              ))}  
+            </div>  
+  
+            <div className="border-t border-slate-700 pt-4 space-y-3">  
+              <div className="space-y-1.5">  
+                <label className="text-sm text-slate-300">  
+                  Rappel de renouvellement (jours) : <span className="text-brand-400 font-semibold">{settings.passwordRenewalReminderDays}</span>  
+                </label>  
+                <input  
+                  type="range"  
+                  min={30}  
+                  max={365}  
+                  step={30}  
+                  value={settings.passwordRenewalReminderDays}  
+                  onChange={(e) => handleSettingsChange('passwordRenewalReminderDays', Number(e.target.value))}  
+                  className="w-full accent-brand-500"  
+                />  
+                <p className="text-xs text-slate-500">Renouveler les mots de passe tous les {settings.passwordRenewalReminderDays} jours</p>  
+              </div>  
+            </div>  
+          </div>  
+        </Card>  
       )}
 
       <Modal
