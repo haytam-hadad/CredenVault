@@ -2,6 +2,7 @@ const Account = require('../models/Account');
 const Notification = require('../models/Notification');  
 const SecurityLog = require('../models/SecurityLog');  
 const SecuritySettings = require('../models/SecuritySettings');  
+const AppError = require('../utils/AppError');  
 const {  
   generateSecurePassword,  
   evaluatePasswordStrength,  
@@ -121,7 +122,6 @@ const markNotificationRead = async (req, res, next) => {
     );  
   
     if (!notification) {  
-      const AppError = require('../utils/AppError');  
       return next(new AppError('Notification introuvable', 404));  
     }  
   
@@ -133,9 +133,8 @@ const markNotificationRead = async (req, res, next) => {
     next(error);  
   }  
 };  
-
   
-// Delete a single notification owned by the current user.  
+// NEW: delete a single notification  
 const deleteNotification = async (req, res, next) => {  
   try {  
     const notification = await Notification.findOneAndDelete({  
@@ -144,7 +143,6 @@ const deleteNotification = async (req, res, next) => {
     });  
   
     if (!notification) {  
-      const AppError = require('../utils/AppError');  
       return next(new AppError('Notification introuvable', 404));  
     }  
   
@@ -206,14 +204,32 @@ const checkPasswordRenewals = async (req, res, next) => {
   
     await sendPasswordRenewalReminder(req.user, outdatedAccounts);  
   
-    const notifications = outdatedAccounts.map((account) => ({  
+    // Skip accounts that already have an unread password-renewal notification  
+    // so repeated calls don't spam duplicate in-app notifications.  
+    const existingUnread = await Notification.find({  
       userId,  
-      message: `Le mot de passe de "${account.serviceName}" n'a pas été changé depuis ${reminderDays} jours`,  
+      status: 'unread',  
       type: 'password-renewal',  
-      relatedAccountId: account._id,  
-    }));  
+      relatedAccountId: { $ne: null },  
+    }).select('relatedAccountId');  
   
-    await Notification.insertMany(notifications);  
+    const existingIds = new Set(  
+      existingUnread.map((n) => String(n.relatedAccountId))  
+    );  
+  
+    const notifications = outdatedAccounts  
+      .filter((account) => !existingIds.has(String(account._id)))  
+      .map((account) => ({  
+        userId,  
+        message: `Le mot de passe de "${account.serviceName}" n'a pas été changé depuis ${reminderDays} jours`,  
+        type: 'password-renewal',  
+        relatedAccountId: account._id,  
+        metadata: { serviceName: account.serviceName },  
+      }));  
+  
+    if (notifications.length > 0) {  
+      await Notification.insertMany(notifications);  
+    }  
   
     res.json({  
       success: true,  
@@ -274,8 +290,6 @@ const generateReminderNotifications = async (req, res, next) => {
     );  
     const weakAccounts = accounts.filter((a) => isPasswordWeak(a.passwordStrength));  
   
-    // Skip accounts that already have an unread notification of the same type  
-    // so repeated generation does not spam duplicates.  
     const existingUnread = await Notification.find({  
       userId,  
       status: 'unread',  

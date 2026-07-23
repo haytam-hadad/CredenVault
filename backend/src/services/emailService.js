@@ -184,6 +184,7 @@ const getTransporter = () => {
   return transporter;  
 };  
   
+// backend/src/services/emailService.js  
 const sendEmail = async ({ to, subject, html, text }) => {  
   const transport = getTransporter();  
   
@@ -195,32 +196,18 @@ const sendEmail = async ({ to, subject, html, text }) => {
     text: text || html.replace(/<[^>]*>/g, ''),  
   };  
   
-  console.log('[EmailService] Preparing email:', {  
-    to,  
-    subject,  
-    from: smtp.from,  
-  });  
-  
   if (!transport) {  
-    console.log('[Email simulé]', { to, subject });  
+    console.log('[Email simulé]', { subject });  
     return { simulated: true };  
   }  
   
   try {  
-    const result = await transport.sendMail(mailOptions);  
-  
-    console.log('[EmailService] Email sent successfully:', {  
-      messageId: result.messageId,  
-      accepted: result.accepted,  
-      rejected: result.rejected,  
-    });  
-  
-    return result;  
+    return await transport.sendMail(mailOptions);  
   } catch (error) {  
-    console.error('[EmailService] Email sending failed:', error);  
+    console.error('[EmailService] Email sending failed');  
     throw error;  
   }  
-};  
+};
   
 const sendPasswordRenewalReminder = async (user, accounts) => {  
   const accountList = accounts  
