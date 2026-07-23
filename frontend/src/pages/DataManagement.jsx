@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Download, Upload, FileJson, AlertTriangle, Database } from 'lucide-react';  
 import toast from 'react-hot-toast';  
 import { Card, Button, Modal } from '../components/ui';  
-import { useReauth } from '../components/auth/ReAuthContext';  
 import { accountService } from '../services';  
+import { useReauth } from '../components/auth/ReAuthContext';  
   
 const normalizeImportPayload = (parsed) => {  
   if (Array.isArray(parsed)) return parsed;  
@@ -14,8 +14,8 @@ const normalizeImportPayload = (parsed) => {
 };  
   
 export default function DataManagement() {  
-  const { requireReauth } = useReauth();  
   const fileInputRef = useRef(null);  
+  const { requireReauth } = useReauth();  
   const [accountCount, setAccountCount] = useState(null);  
   const [exporting, setExporting] = useState(false);  
   const [importing, setImporting] = useState(false);  
@@ -29,51 +29,50 @@ export default function DataManagement() {
       .catch(() => setAccountCount(0));  
   }, []);  
   
+  const runExport = async () => {  
+    try {  
+      setExporting(true);  
+      const res = await accountService.exportData();  
+      const payload = res.data?.accounts != null ? res.data : { accounts: res.data || [] };  
+      const accounts = payload.accounts || [];  
+  
+      const exportFile = {  
+        version: payload.version || 1,  
+        exportedAt: payload.exportedAt || new Date().toISOString(),  
+        accountCount: accounts.length,  
+        accounts,  
+      };  
+  
+      const dataStr = JSON.stringify(exportFile, null, 2);  
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });  
+      const url = URL.createObjectURL(dataBlob);  
+      const link = document.createElement('a');  
+      link.href = url;  
+      link.download = `credenvault-backup-${new Date().toISOString().split('T')[0]}.json`;  
+      document.body.appendChild(link);  
+      link.click();  
+      document.body.removeChild(link);  
+      URL.revokeObjectURL(url);  
+  
+      toast.success(  
+        accounts.length  
+          ? `${accounts.length} compte(s) exporté(s)`  
+          : 'Sauvegarde vide exportée'  
+      );  
+    } catch (error) {  
+      toast.error(error.message || "Échec de l'exportation");  
+    } finally {  
+      setExporting(false);  
+    }  
+  };  
+  
   const handleExport = () => {  
-    // Exporting downloads every decrypted password, so gate it behind re-auth.  
-    requireReauth(  
-      async () => {  
-        try {  
-          setExporting(true);  
-          const res = await accountService.exportData();  
-          const payload = res.data?.accounts != null ? res.data : { accounts: res.data || [] };  
-          const accounts = payload.accounts || [];  
-  
-          const exportFile = {  
-            version: payload.version || 1,  
-            exportedAt: payload.exportedAt || new Date().toISOString(),  
-            accountCount: accounts.length,  
-            accounts,  
-          };  
-  
-          const dataStr = JSON.stringify(exportFile, null, 2);  
-          const dataBlob = new Blob([dataStr], { type: 'application/json' });  
-          const url = URL.createObjectURL(dataBlob);  
-          const link = document.createElement('a');  
-          link.href = url;  
-          link.download = `credenvault-backup-${new Date().toISOString().split('T')[0]}.json`;  
-          document.body.appendChild(link);  
-          link.click();  
-          document.body.removeChild(link);  
-          URL.revokeObjectURL(url);  
-  
-          toast.success(  
-            accounts.length  
-              ? `${accounts.length} compte(s) exporté(s)`  
-              : 'Sauvegarde vide exportée'  
-          );  
-        } catch (error) {  
-          toast.error(error.message || "Échec de l'exportation");  
-        } finally {  
-          setExporting(false);  
-        }  
-      },  
-      {  
-        title: 'Exporter les données',  
-        description: 'Confirmez votre identité pour télécharger une sauvegarde de tous vos mots de passe.',  
-        actionLabel: 'Exporter',  
-      }  
-    );  
+    requireReauth(runExport, {  
+      title: 'Exporter les données',  
+      description:  
+        'Confirmez votre identité pour télécharger une sauvegarde contenant tous vos mots de passe déchiffrés.',  
+      actionLabel: 'Exporter',  
+    });  
   };  
   
   const handleFileSelect = async (event) => {  
