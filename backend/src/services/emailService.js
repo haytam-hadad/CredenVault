@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');  
-const { smtp } = require('../config/env');  
+const { smtp, corsOrigin } = require('../config/env');  
   
 console.log('[EmailService] SMTP config loaded:', {  
   host: smtp.host,  
@@ -8,6 +8,9 @@ console.log('[EmailService] SMTP config loaded:', {
   from: smtp.from,  
   hasPassword: !!smtp.pass,  
 });  
+  
+// Frontend URL used for CTA links (falls back to CORS origin, then localhost)  
+const FRONTEND_URL = process.env.FRONTEND_URL || corsOrigin || 'http://localhost:3000';  
   
 // =======================================  
 // Brand palette (matches frontend/tailwind.config.js)  
@@ -19,11 +22,22 @@ const BRAND = {
   brand700: '#3549cc',  
   bg: '#020617',        // slate-950  
   surface: '#0f172a',   // slate-900  
-  surfaceAlt: '#1e293b',// slate-800  
+  surfaceAlt: '#1e293b', // slate-800  
   border: '#1e293b',  
   text: '#e2e8f0',      // slate-200  
   textMuted: '#94a3b8', // slate-400  
   textFaint: '#64748b', // slate-500  
+};  
+  
+// Safe date formatter — avoids rendering "Invalid Date"  
+const formatDate = (value, withTime = false) => {  
+  const date = value ? new Date(value) : new Date();  
+  if (Number.isNaN(date.getTime())) {  
+    return withTime ? new Date().toLocaleString('fr-FR') : new Date().toLocaleDateString('fr-FR');  
+  }  
+  return withTime  
+    ? date.toLocaleString('fr-FR')  
+    : date.toLocaleDateString('fr-FR');  
 };  
   
 // Reusable branded CTA button (mirrors .btn-primary)  
@@ -208,21 +222,14 @@ const sendEmail = async ({ to, subject, html, text }) => {
   }  
 };  
   
-// Safe date formatting so a missing/invalid date never throws  
-const formatDate = (value, withTime = false) => {  
-  const d = value ? new Date(value) : new Date();  
-  if (Number.isNaN(d.getTime())) return 'Inconnue';  
-  return withTime ? d.toLocaleString('fr-FR') : d.toLocaleDateString('fr-FR');  
-};  
-  
-const sendPasswordRenewalReminder = async (user, accounts = []) => {  
+const sendPasswordRenewalReminder = async (user, accounts) => {  
   const accountList = accounts  
     .map((a) => `  
       <li style="  
       margin-bottom:10px;  
       color:#cbd5e1;  
       ">  
-      <strong>${a.serviceName || 'Service'}</strong>  
+      <strong>${a.serviceName}</strong>  
       —  
       ${formatDate(a.lastPasswordChange)}  
       </li>  
@@ -264,7 +271,7 @@ const sendPasswordRenewalReminder = async (user, accounts = []) => {
     ⚠️ Pour votre sécurité, nous recommandons de renouveler ces mots de passe.  
     </p>  
   
-    <p>  
+    <p style="margin-top:30px;">  
     — L'équipe CredenVault  
     </p>  
   
@@ -305,7 +312,7 @@ const sendLoginAlert = async (user, logEntry = {}) => {
     border-radius:12px;  
     padding:20px;  
     margin:25px 0;  
-    border-left:4px solid ${BRAND.brand500};  
+    border-left:4px solid #22c55e;  
     ">  
   
     <p style="margin:0 0 8px;">  
@@ -344,10 +351,9 @@ const sendLoginAlert = async (user, logEntry = {}) => {
     subject: 'CredenVault — Alerte de connexion',  
     html,  
   });  
-}; 
-
-const sendPasswordChangedEmail = async (user, logEntry = {}) => {  
+};  
   
+const sendPasswordChangedEmail = async (user, logEntry = {}) => {  
   console.log('[EmailService] sendPasswordChangedEmail called:', {  
     user: user.email,  
     logEntry,  
@@ -355,47 +361,39 @@ const sendPasswordChangedEmail = async (user, logEntry = {}) => {
   
   const html = emailTemplate({  
     title: 'Password Changed',  
-  
     content: `  
   
-    <h2 style="color:#ffffff;">  
+    <h2 style="color:#ffffff;margin-top:0;">  
     🔒 Mot de passe modifié  
     </h2>  
-  
   
     <p>  
     Bonjour <strong>${user.firstName || user.email}</strong>,  
     </p>  
   
-  
-    <p style="color:#94a3b8;">  
+    <p style="color:${BRAND.textMuted};">  
     Le mot de passe de votre compte CredenVault vient d'être modifié.  
     </p>  
   
-  
     <div style="  
-    background:#1e293b;  
+    background:${BRAND.surfaceAlt};  
     border-radius:12px;  
     padding:20px;  
     margin:25px 0;  
-    border-left:4px solid #455ee3;  
+    border-left:4px solid ${BRAND.brand500};  
     ">  
   
-  
-    <p>  
+    <p style="margin:0 0 8px;">  
     📅 <strong>Date :</strong>  
-    ${new Date(logEntry.createdAt || Date.now()).toLocaleString('fr-FR')}  
+    ${formatDate(logEntry.createdAt, true)}  
     </p>  
   
-  
-    <p>  
+    <p style="margin:0;">  
     🌐 <strong>IP :</strong>  
     ${logEntry.ipAddress || 'Inconnue'}  
     </p>  
   
-  
     </div>  
-  
   
     <div style="  
     background:#451a03;  
@@ -409,21 +407,19 @@ const sendPasswordChangedEmail = async (user, logEntry = {}) => {
   
     </div>  
   
-  
     <p style="margin-top:30px;">  
     — L'équipe CredenVault  
     </p>  
   
-    `  
+    `,  
   });  
-  
   
   return sendEmail({  
     to: user.email,  
     subject: 'CredenVault — Votre mot de passe a été modifié',  
     html,  
   });  
-};
+};  
   
 const sendWelcomeEmail = async (user) => {  
   console.log('[EmailService] sendWelcomeEmail called:', {  
@@ -461,7 +457,7 @@ const sendWelcomeEmail = async (user) => {
     </div>  
   
     <div style="text-align:center;margin:30px 0;">  
-    ${button('Accéder à mon coffre-fort', 'https://credenvault.app/login')}  
+    ${button('Accéder à mon coffre-fort', `${FRONTEND_URL}/login`)}  
     </div>  
   
     <p>  
@@ -483,6 +479,7 @@ console.log('[EmailService] Exports:', {
   sendPasswordRenewalReminder: typeof sendPasswordRenewalReminder,  
   sendLoginAlert: typeof sendLoginAlert,  
   sendWelcomeEmail: typeof sendWelcomeEmail,  
+  sendPasswordChangedEmail: typeof sendPasswordChangedEmail,  
 });  
   
 module.exports = {  
