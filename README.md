@@ -182,7 +182,7 @@ Protected routes are authenticated via the JWT httpOnly cookie, with an
 | GET | `/accounts` | List accounts (`category`, `search`, `isFavorite`, `page`, `limit`) |  
 | POST | `/accounts` | Create account |  
 | GET | `/accounts/stats` | Account statistics |  
-| GET | `/accounts/export/all` | Export all accounts (decrypted) |  
+| POST | `/accounts/export/all` | Export all accounts (decrypted) |  
 | POST | `/accounts/import/bulk` | Bulk import |  
 | GET | `/accounts/:id` | Get one account (includes decrypted password) |  
 | PUT | `/accounts/:id` | Update account |  
@@ -322,11 +322,6 @@ cd frontend && npm run build
 - Shared vaults / team features  
 - Biometric / hardware-key authentication  
 - Offline mode  
-  
-## 📄 License  
-  
-MIT (see `package.json`). No standalone `LICENSE` file is included yet.  
-  
----  
+
   
 🔐 **Protect your passwords with CredenVault**

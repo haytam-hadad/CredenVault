@@ -149,10 +149,6 @@ export default function Login() {
               </div>
               <div className="flex items-center gap-2 text-xs text-slate-400 ">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                <span>HTTPS sécurisé</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-slate-400 ">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                 <span>Authentification 2FA</span>
               </div>
             </div>
