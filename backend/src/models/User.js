@@ -39,6 +39,17 @@ const userSchema = new mongoose.Schema(
       type: String,  
       select: false,  
     },  
+    // Backup recovery codes (hashed, single-use)  
+    twoFactorRecoveryCodes: {  
+      type: [  
+        {  
+          codeHash: { type: String, required: true },  
+          usedAt: { type: Date, default: null },  
+        },  
+      ],  
+      default: [],  
+      select: false,  
+    },  
     isActive: {  
       type: Boolean,  
       default: true,  
@@ -54,6 +65,7 @@ const userSchema = new mongoose.Schema(
         delete ret.password;  
         delete ret.twoFactorSecret;  
         delete ret.pendingTwoFactorSecret;  
+        delete ret.twoFactorRecoveryCodes;  
         delete ret.__v;  
         return ret;  
       },  

@@ -1,55 +1,61 @@
-const { z } = require('zod');
-
-const passwordSchema = z
-  .string()
-  .min(8, 'Le mot de passe doit contenir au moins 8 caractères')
-  .max(128);
-
-const registerSchema = z.object({
-  body: z.object({
-    email: z.string().email('Email invalide'),
-    password: passwordSchema,
-    firstName: z.string().trim().optional(),
-    lastName: z.string().trim().optional(),
-  }),
-});
-
-const loginSchema = z.object({
-  body: z.object({
-    email: z.string().email('Email invalide'),
-    password: z.string().min(1, 'Mot de passe requis'),
-    otpToken: z.union([
-      z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),
-      z.string().length(0),
-      z.undefined(),
-      z.null(),
-    ]).optional(),
-  }),
-});
-
-const verify2FASchema = z.object({
-  body: z.object({
-    token: z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),
-  }),
-});
-
-const disable2FASchema = z.object({
-  body: z.object({
-    password: z.string().min(1, 'Mot de passe requis'),
-    token: z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),
-  }),
-});
-
-const verifyPasswordSchema = z.object({
-  body: z.object({
-    password: z.string().min(1, 'Mot de passe requis'),
-  }),
-});
-
-module.exports = {
-  registerSchema,
-  loginSchema,
-  verify2FASchema,
-  disable2FASchema,
-  verifyPasswordSchema,
+const { z } = require('zod');  
+  
+const passwordSchema = z  
+  .string()  
+  .min(8, 'Le mot de passe doit contenir au moins 8 caractères')  
+  .max(128);  
+  
+const registerSchema = z.object({  
+  body: z.object({  
+    email: z.string().email('Email invalide'),  
+    password: passwordSchema,  
+    firstName: z.string().trim().optional(),  
+    lastName: z.string().trim().optional(),  
+  }),  
+});  
+  
+const loginSchema = z.object({  
+  body: z.object({  
+    email: z.string().email('Email invalide'),  
+    password: z.string().min(1, 'Mot de passe requis'),  
+    otpToken: z.union([  
+      z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),  
+      z.string().length(0),  
+      z.undefined(),  
+      z.null(),  
+    ]).optional(),  
+    recoveryCode: z.union([  
+      z.string().min(8).max(20),  
+      z.string().length(0),  
+      z.undefined(),  
+      z.null(),  
+    ]).optional(),  
+  }),  
+});  
+  
+const verify2FASchema = z.object({  
+  body: z.object({  
+    token: z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),  
+  }),  
+});  
+  
+const disable2FASchema = z.object({  
+  body: z.object({  
+    password: z.string().min(1, 'Mot de passe requis'),  
+    token: z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),  
+  }),  
+});  
+  
+const verifyPasswordSchema = z.object({  
+  body: z.object({  
+    password: z.string().min(1, 'Mot de passe requis'),  
+  }),  
+});  
+  
+module.exports = {  
+  registerSchema,  
+  loginSchema,  
+  verify2FASchema,  
+  disable2FASchema,  
+  verifyPasswordSchema,  
 };

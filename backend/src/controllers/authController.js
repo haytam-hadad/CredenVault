@@ -1,6 +1,8 @@
 // backend/src/controllers/authController.js  
 const speakeasy = require('speakeasy');  
 const QRCode = require('qrcode');  
+const bcrypt = require('bcryptjs');  
+const crypto = require('crypto');  
 const User = require('../models/User');  
 const SecuritySettings = require('../models/SecuritySettings');  
 const AppError = require('../utils/AppError');  
@@ -9,6 +11,8 @@ const {
   setTokenCookie,  
   clearTokenCookie,  
 } = require('../middlewares/authMiddleware');  
+  
+const { encrypt, decrypt } = require('../services/encryptionService');  
   
 const {  
   createSecurityLog,  
@@ -25,17 +29,56 @@ const {
 } = require('../services/notificationService');  
   
 // ==========================  
-// REGISTER  
+// 2FA HELPERS  
 // ==========================  
+  
+// Store the TOTP secret encrypted at rest as "ciphertext:iv"  
+const encryptSecret = (base32) => {  
+  const { encrypted, iv } = encrypt(base32);  
+  return `${encrypted}:${iv}`;  
+};  
+  
+// Read it back to the raw base32 speakeasy expects.  
+// Legacy fallback: secrets saved before this change have no ":" → returned as-is.  
+const decryptSecret = (stored) => {  
+  if (!stored) return stored;  
+  if (!stored.includes(':')) return stored;  
+  const [encrypted, iv] = stored.split(':');  
+  return decrypt(encrypted, iv);  
+};  
+  
+const RECOVERY_CODE_COUNT = 10;  
+  
+// Human-readable one-time codes, e.g. "A1B2C-D3E4F"  
+const generateRecoveryCodes = (count = RECOVERY_CODE_COUNT) => {  
+  const codes = [];  
+  for (let i = 0; i < count; i += 1) {  
+    const raw = crypto.randomBytes(5).toString('hex').toUpperCase(); // 10 hex chars  
+    codes.push(`${raw.slice(0, 5)}-${raw.slice(5)}`);  
+  }  
+  return codes;  
+};  
+  
+// Hash each code with bcrypt (never store plaintext)  
+const hashRecoveryCodes = async (codes) =>  
+  Promise.all(  
+    codes.map(async (code) => ({  
+      codeHash: await bcrypt.hash(code, 12),  
+      usedAt: null,  
+    }))  
+  );  
+  
+// ==========================  
+// REGISTER  
 // ==========================  
 const register = async (req, res, next) => {  
   try {  
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password, firstName, lastName } = req.body;  
   
     const existing = await User.findOne({ email });  
     if (existing) {  
-      return next(new AppError('Email ou mot de passe invalide', 401));  
-    }
+      return next(new AppError('Cet email est déjà utilisé', 409));  
+    }  
   
     const user = await User.create({  
       email,  
@@ -85,12 +128,12 @@ const register = async (req, res, next) => {
 // ==========================  
 const login = async (req, res, next) => {  
   try {  
-    const { email, password, otpToken } = req.body;  
+    const { email, password, otpToken, recoveryCode } = req.body;  
   
     const clientInfo = getClientInfo(req);  
   
     const user = await User.findOne({ email })  
-      .select('+password +twoFactorSecret');  
+      .select('+password +twoFactorSecret +twoFactorRecoveryCodes');  
   
     if (!user || !(await user.comparePassword(password))) {  
       await createSecurityLog({  
@@ -105,7 +148,8 @@ const login = async (req, res, next) => {
     }  
   
     if (user.twoFactorEnabled) {  
-      if (!otpToken) {  
+      // Neither an OTP nor a recovery code provided → ask the client for it  
+      if (!otpToken && !recoveryCode) {  
         return res.status(200).json({  
           success: true,  
           requires2FA: true,  
@@ -113,12 +157,29 @@ const login = async (req, res, next) => {
         });  
       }  
   
-      const isValid = speakeasy.totp.verify({  
-        secret: user.twoFactorSecret,  
-        encoding: 'base32',  
-        token: otpToken,  
-        window: 1,  
-      });  
+      let isValid = false;  
+      let usedRecoveryCode = false;  
+  
+      if (otpToken) {  
+        isValid = speakeasy.totp.verify({  
+          secret: decryptSecret(user.twoFactorSecret),  
+          encoding: 'base32',  
+          token: otpToken,  
+          window: 1,  
+        });  
+      } else if (recoveryCode) {  
+        const normalized = recoveryCode.trim().toUpperCase();  
+        for (const entry of user.twoFactorRecoveryCodes) {  
+          if (entry.usedAt) continue;  
+          // eslint-disable-next-line no-await-in-loop  
+          if (await bcrypt.compare(normalized, entry.codeHash)) {  
+            entry.usedAt = new Date();  
+            isValid = true;  
+            usedRecoveryCode = true;  
+            break;  
+          }  
+        }  
+      }  
   
       if (!isValid) {  
         await createSecurityLog({  
@@ -126,10 +187,22 @@ const login = async (req, res, next) => {
           action: 'login-failed',  
           ...clientInfo,  
           success: false,  
-          details: 'Code 2FA invalide',  
+          details: recoveryCode  
+            ? 'Code de récupération invalide'  
+            : 'Code 2FA invalide',  
         });  
   
-        return next(new AppError('Code OTP invalide', 401));  
+        return next(  
+          new AppError(  
+            recoveryCode ? 'Code de récupération invalide' : 'Code OTP invalide',  
+            401  
+          )  
+        );  
+      }  
+  
+      // Persist the consumed recovery code immediately  
+      if (usedRecoveryCode) {  
+        await user.save();  
       }  
     }  
   
@@ -140,6 +213,7 @@ const login = async (req, res, next) => {
       userId: user._id,  
       action: 'login',  
       ...clientInfo,  
+      details: recoveryCode ? 'Connexion via code de récupération' : undefined,  
     });  
   
     const settings = await SecuritySettings.findOne({ userId: user._id });  
@@ -155,6 +229,7 @@ const login = async (req, res, next) => {
   
     user.password = undefined;  
     user.twoFactorSecret = undefined;  
+    user.twoFactorRecoveryCodes = undefined;  
   
     res.json({  
       success: true,  
@@ -182,7 +257,8 @@ const setup2FA = async (req, res, next) => {
       return next(new AppError('Utilisateur introuvable', 404));  
     }  
   
-    user.twoFactorSecret = secret.base32;  
+    // Store encrypted at rest; QR still shows plaintext base32 to the client  
+    user.twoFactorSecret = encryptSecret(secret.base32);  
     await user.save();  
   
     const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);  
@@ -202,7 +278,7 @@ const setup2FA = async (req, res, next) => {
 };  
   
 // ==========================  
-// VERIFY 2FA  
+// VERIFY 2FA (enable + issue recovery codes)  
 // ==========================  
 const verify2FA = async (req, res, next) => {  
   try {  
@@ -219,7 +295,7 @@ const verify2FA = async (req, res, next) => {
     }  
   
     const isValid = speakeasy.totp.verify({  
-      secret: user.twoFactorSecret,  
+      secret: decryptSecret(user.twoFactorSecret),  
       encoding: 'base32',  
       token,  
       window: 1,  
@@ -230,6 +306,11 @@ const verify2FA = async (req, res, next) => {
     }  
   
     user.twoFactorEnabled = true;  
+  
+    // Generate one-time recovery codes, store hashes, return plaintext once  
+    const recoveryCodes = generateRecoveryCodes();  
+    user.twoFactorRecoveryCodes = await hashRecoveryCodes(recoveryCodes);  
+  
     await user.save();  
   
     const clientInfo = getClientInfo(req);  
@@ -240,9 +321,61 @@ const verify2FA = async (req, res, next) => {
       ...clientInfo,  
     });  
   
+    await createSecurityLog({  
+      userId: user._id,  
+      action: '2fa-recovery-codes-generated',  
+      ...clientInfo,  
+    });  
+  
     res.json({  
       success: true,  
       message: 'Authentification à deux facteurs activée',  
+      data: { recoveryCodes },  
+    });  
+  } catch (error) {  
+    next(error);  
+  }  
+};  
+  
+// ==========================  
+// REGENERATE RECOVERY CODES  
+// ==========================  
+const regenerateRecoveryCodes = async (req, res, next) => {  
+  try {  
+    const { password } = req.body;  
+  
+    const user = await User.findById(req.user._id).select('+password');  
+  
+    if (!user) {  
+      return next(new AppError('Utilisateur introuvable', 404));  
+    }  
+  
+    if (!user.twoFactorEnabled) {  
+      return next(  
+        new AppError('Authentification à deux facteurs non activée', 400)  
+      );  
+    }  
+  
+    if (!(await user.comparePassword(password))) {  
+      return next(new AppError('Mot de passe incorrect', 401));  
+    }  
+  
+    const recoveryCodes = generateRecoveryCodes();  
+    user.twoFactorRecoveryCodes = await hashRecoveryCodes(recoveryCodes);  
+    await user.save();  
+  
+    const clientInfo = getClientInfo(req);  
+  
+    await createSecurityLog({  
+      userId: user._id,  
+      action: '2fa-recovery-codes-generated',  
+      ...clientInfo,  
+    });  
+  
+    res.json({  
+      success: true,  
+      message: 'Nouveaux codes de récupération générés',  
+      data: { recoveryCodes },  
     });  
   } catch (error) {  
     next(error);  
@@ -274,7 +407,7 @@ const disable2FA = async (req, res, next) => {
     }  
   
     const isValid = speakeasy.totp.verify({  
-      secret: user.twoFactorSecret,  
+      secret: decryptSecret(user.twoFactorSecret),  
       encoding: 'base32',  
       token,  
       window: 1,  
@@ -286,6 +419,7 @@ const disable2FA = async (req, res, next) => {
   
     user.twoFactorEnabled = false;  
     user.twoFactorSecret = undefined;  
+    user.twoFactorRecoveryCodes = [];  
     await user.save();  
   
     const clientInfo = getClientInfo(req);  
@@ -366,6 +500,7 @@ module.exports = {
   login,  
   setup2FA,  
   verify2FA,  
+  regenerateRecoveryCodes,  
   disable2FA,  
   getMe,  
   verifyPassword,  
