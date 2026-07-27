@@ -27,14 +27,15 @@ const {
 // ==========================  
 // REGISTER  
 // ==========================  
+// ==========================  
 const register = async (req, res, next) => {  
   try {  
-    const { email, password, firstName, lastName } = req.body;  
+    const { email, password, firstName, lastName } = req.body;
   
     const existing = await User.findOne({ email });  
     if (existing) {  
-      return next(new AppError('Cet email est déjà utilisé', 409));  
-    }  
+      return next(new AppError('Email ou mot de passe invalide', 401));  
+    }
   
     const user = await User.create({  
       email,  

@@ -14,7 +14,7 @@ const securitySettingsSchema = new mongoose.Schema(
     },  
     passwordRenewalReminderDays: {  
       type: Number,  
-      default: 90,  
+      default: 30,  
       min: 30,  
       max: 365,  
     },  
