@@ -40,10 +40,26 @@ const verify2FASchema = z.object({
 });  
   
 const disable2FASchema = z.object({  
-  body: z.object({  
-    password: z.string().min(1, 'Mot de passe requis'),  
-    token: z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),  
-  }),  
+  body: z  
+    .object({  
+      password: z.string().min(1, 'Mot de passe requis'),  
+      token: z.union([  
+        z.string().length(6, 'Le code OTP doit contenir 6 chiffres'),  
+        z.string().length(0),  
+        z.undefined(),  
+        z.null(),  
+      ]).optional(),  
+      recoveryCode: z.union([  
+        z.string().min(8).max(20),  
+        z.string().length(0),  
+        z.undefined(),  
+        z.null(),  
+      ]).optional(),  
+    })  
+    .refine((data) => Boolean(data.token) || Boolean(data.recoveryCode), {  
+      message: 'Code OTP ou code de récupération requis',  
+      path: ['token'],  
+    }),  
 });  
   
 const verifyPasswordSchema = z.object({  

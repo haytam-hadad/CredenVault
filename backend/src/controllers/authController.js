@@ -387,10 +387,10 @@ const regenerateRecoveryCodes = async (req, res, next) => {
 // ==========================  
 const disable2FA = async (req, res, next) => {  
   try {  
-    const { password, token } = req.body;  
+    const { password, token, recoveryCode } = req.body;  
   
     const user = await User.findById(req.user._id)  
-      .select('+password +twoFactorSecret');  
+      .select('+password +twoFactorSecret +twoFactorRecoveryCodes');  
   
     if (!user) {  
       return next(new AppError('Utilisateur introuvable', 404));  
@@ -406,15 +406,40 @@ const disable2FA = async (req, res, next) => {
       return next(new AppError('Mot de passe incorrect', 401));  
     }  
   
-    const isValid = speakeasy.totp.verify({  
-      secret: decryptSecret(user.twoFactorSecret),  
-      encoding: 'base32',  
-      token,  
-      window: 1,  
-    });  
+    if (!token && !recoveryCode) {  
+      return next(  
+        new AppError('Code OTP ou code de récupération requis', 400)  
+      );  
+    }  
+  
+    let isValid = false;  
+  
+    if (token) {  
+      isValid = speakeasy.totp.verify({  
+        secret: decryptSecret(user.twoFactorSecret),  
+        encoding: 'base32',  
+        token,  
+        window: 1,  
+      });  
+    } else if (recoveryCode) {  
+      const normalized = recoveryCode.trim().toUpperCase();  
+      for (const entry of user.twoFactorRecoveryCodes) {  
+        if (entry.usedAt) continue;  
+        // eslint-disable-next-line no-await-in-loop  
+        if (await bcrypt.compare(normalized, entry.codeHash)) {  
+          isValid = true;  
+          break;  
+        }  
+      }  
+    }  
   
     if (!isValid) {  
-      return next(new AppError('Code OTP invalide', 401));  
+      return next(  
+        new AppError(  
+          recoveryCode ? 'Code de récupération invalide' : 'Code OTP invalide',  
+          401  
+        )  
+      );  
     }  
   
     user.twoFactorEnabled = false;  
@@ -437,7 +462,7 @@ const disable2FA = async (req, res, next) => {
   } catch (error) {  
     next(error);  
   }  
-};  
+};
   
 // ==========================  
 // GET ME  
