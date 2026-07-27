@@ -2,8 +2,8 @@
   
 A modern, secure password manager built with **Node.js/Express** and **React (Vite)**.  
 CredenVault stores your credentials with AES-256-GCM encryption, supports TOTP two-factor  
-authentication, analyses password strength, generates actionable security reminders, and  
-gates sensitive actions behind a re-authentication layer.  
+authentication with single-use backup recovery codes, analyses password strength, generates  
+actionable security reminders, and gates sensitive actions behind a re-authentication layer.  
   
 > The user interface is in **French**; this document is in English.  
   
@@ -14,6 +14,8 @@ gates sensitive actions behind a re-authentication layer.
 - **Account passwords are never returned in list responses** — they are decrypted only on the single-account endpoint.  
 - **bcryptjs** password hashing (12 rounds) for user login credentials.  
 - **TOTP-based 2FA** (RFC 6238) with QR-code enrolment.  
+- **2FA secret encrypted at rest** — the TOTP secret is stored AES-256-GCM encrypted (as `ciphertext:iv`), decrypted only when verifying a code. The QR/secret is still shown once in plaintext at enrolment.  
+- **Backup recovery codes** — single-use codes generated when 2FA is enabled, stored as bcrypt hashes and shown only once. Usable to log in or to disable 2FA if the authenticator app is lost, and regenerable at any time.  
 - **Re-authentication layer** — revealing/copying a password, removing a favorite, viewing the account email, and editing the profile require re-entering the master password (with a short "sudo mode" grace window).  
 - **Password strength analysis** with actionable feedback.  
 - **Audit logging** of security-relevant events (login, 2FA, account/profile changes, import/export…).  
@@ -158,12 +160,13 @@ Protected routes are authenticated via the JWT httpOnly cookie, with an
 | Method | Endpoint | Description | Auth |  
 |--------|----------|-------------|------|  
 | POST | `/auth/register` | Register a new user | ❌ |  
-| POST | `/auth/login` | Log in (sets JWT cookie) | ❌ |  
+| POST | `/auth/login` | Log in (accepts `otpToken` or `recoveryCode` when 2FA is enabled; sets JWT cookie) | ❌ |  
 | POST | `/auth/logout` | Log out | ✅ |  
 | GET | `/auth/me` | Current user | ✅ |  
 | POST | `/auth/2fa/setup` | Start 2FA enrolment (QR + secret) | ✅ |  
-| POST | `/auth/2fa/verify` | Verify & enable 2FA | ✅ |  
-| POST | `/auth/2fa/disable` | Disable 2FA (password + OTP) | ✅ |  
+| POST | `/auth/2fa/verify` | Verify & enable 2FA (returns one-time recovery codes) | ✅ |  
+| POST | `/auth/2fa/recovery-codes/regenerate` | Regenerate recovery codes (password required; invalidates old codes) | ✅ |  
+| POST | `/auth/2fa/disable` | Disable 2FA (password + OTP **or** recovery code) | ✅ |  
 | POST | `/auth/verify-password` | Re-authenticate (validate master password) | ✅ |  
   
 ### Users (`/users`)  
@@ -209,12 +212,16 @@ Health check: `GET /api/health`.
 ### User  
 ```javascript  
 {  
-  email: String,            // unique, lowercase  
-  password: String,         // bcrypt hash, select:false  
+  email: String,                 // unique, lowercase  
+  password: String,              // bcrypt hash, select:false  
   firstName: String,  
   lastName: String,  
   twoFactorEnabled: Boolean,  
-  twoFactorSecret: String,  // select:false  
+  twoFactorSecret: String,       // AES-256-GCM encrypted (ciphertext:iv), select:false  
+  pendingTwoFactorSecret: String,// select:false  
+  twoFactorRecoveryCodes: [      // single-use, select:false  
+    { codeHash: String, usedAt: Date }  
+  ],  
   isActive: Boolean,  
   lastLogin: Date,  
   timestamps: true  
@@ -259,6 +266,7 @@ Health check: `GET /api/health`.
   action: 'login'|'login-failed'|'logout'|'password-change'|  
           'account-created'|'account-updated'|'account-deleted'|  
           '2fa-enabled'|'2fa-disabled'|'2fa-verified'|  
+          '2fa-recovery-codes-generated'|  
           'profile-updated'|'data-exported'|'data-imported',  
   ipAddress: String,  
   userAgent: String,  
@@ -287,7 +295,8 @@ Health check: `GET /api/health`.
 - **Account passwords**: AES-256-GCM with a per-secret random IV; the 32-byte key comes from `ENCRYPTION_KEY`. Ciphertext and IV are stripped from JSON output. Note: the server holds the key and can decrypt stored passwords — this is server-side encryption at rest, **not** zero-knowledge.  
 - **Authentication**: JWT issued in an httpOnly cookie (`secure` in production, `sameSite: lax`, 7-day max age); an `Authorization: Bearer` header is also accepted. The `protect` middleware verifies the token and loads the active user.  
 - **Re-authentication**: `POST /auth/verify-password` re-checks the bcrypt hash; the frontend `ReAuthProvider`/`useReauth()` gates sensitive actions and keeps a wrong password inside the modal (it is exempt from the Axios 401 auto-logout).  
-- **2FA**: speakeasy TOTP (6 digits, 30s window) with a `qrcode` enrolment image.  
+- **2FA**: speakeasy TOTP (6 digits, 30s window) with a `qrcode` enrolment image. The TOTP secret is **encrypted at rest** (AES-256-GCM) and decrypted only for verification.  
+- **Recovery codes**: single-use backup codes generated on 2FA enable (and regenerable), stored as **bcrypt hashes**, shown to the user only once. They allow login and 2FA-disable when the authenticator is lost; each code is invalidated after use.  
 - **Rate limiting** (as configured in `server.js`):  
   - Global: 500 requests / 15 min on `/api`  
   - Auth (`/api/auth/login`, `/api/auth/register`): 30 / 15 min  
@@ -311,17 +320,16 @@ cd backend && node -c src/server.js
   
 # Frontend — production build must succeed  
 cd frontend && npm run build  
-```  
+```   
   
 ## 🗺️ Roadmap Ideas  
 - Zero-knowledge encryption (client-side key derived from the master password)  
-- 2FA backup / recovery codes  
 - Breach-detection alerts (e.g. Have I Been Pwned)  
 - Scheduled (cron) renewal reminders  
 - Browser extensions  
 - Shared vaults / team features  
 - Biometric / hardware-key authentication  
 - Offline mode  
-
+  
   
 🔐 **Protect your passwords with CredenVault**
