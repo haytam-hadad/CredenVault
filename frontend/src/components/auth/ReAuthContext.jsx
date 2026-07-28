@@ -16,8 +16,12 @@ export function ReAuthProvider({ children }) {
   // recently, `onSuccess` runs immediately; otherwise the modal is shown.  
   // `onSuccess` receives the verified password as its argument (undefined  
   // when run from within the grace window, since no modal is shown).  
+  //  
+  // Pass `options.forcePassword = true` to always show the modal and obtain a  
+  // fresh password, bypassing the grace window. Use this for actions that  
+  // require the master password on the backend (e.g. exporting all secrets).  
   const requireReauth = useCallback((onSuccess, options = {}) => {  
-    if (Date.now() < verifiedUntil.current) {  
+    if (!options.forcePassword && Date.now() < verifiedUntil.current) {  
       onSuccess();  
       return;  
     }  

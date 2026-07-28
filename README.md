@@ -22,7 +22,7 @@ actionable security reminders, and gates sensitive actions behind a re-authentic
 - **Actionable notifications** — weak-password alerts and password-renewal reminders, distinct from the audit log.  
 - **Email notifications** — welcome, login alerts, password-changed confirmations, and password-renewal reminders (requires SMTP; simulated in console when SMTP is unset).  
 - **Zod input validation**, **helmet** headers, **rate limiting**, and CORS protection.  
-- **JWT authentication** stored in an **httpOnly cookie** (`secure` in production, `sameSite: lax`), with an `Authorization: Bearer <token>` header accepted as a fallback. Configurable expiry.  
+- **JWT authentication** stored in an **httpOnly cookie** with an `Authorization: Bearer <token>` header accepted as a fallback. Configurable expiry.  
   
 ### User Experience  
 - Dashboard with a computed security score and recent activity.  
@@ -48,7 +48,7 @@ actionable security reminders, and gates sensitive actions behind a re-authentic
   
 ### 1. Clone  
 ```bash  
-git clone https://github.com/haytam-hadad/CredenVault.git  
+git clone https://github.com/haytam-hadad/CredenVault.git 
 cd CredenVault  
 ```  
   

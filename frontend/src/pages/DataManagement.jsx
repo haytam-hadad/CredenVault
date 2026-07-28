@@ -31,10 +31,14 @@ export default function DataManagement() {
   
   const handleExport = () => {  
     requireReauth(  
-      async () => {  
+      async (password) => {  
+        if (!password) {  
+          toast.error('Mot de passe requis pour exporter vos données');  
+          return;  
+        }  
         try {  
           setExporting(true);  
-          const res = await accountService.exportData();  
+          const res = await accountService.exportData(password);  
           const payload = res.data?.accounts != null ? res.data : { accounts: res.data || [] };  
           const accounts = payload.accounts || [];  
   
@@ -71,6 +75,7 @@ export default function DataManagement() {
         title: 'Confirmer l\'exportation',  
         description: 'Confirmez votre identité pour exporter tous vos mots de passe en clair.',  
         actionLabel: 'Exporter',  
+        forcePassword: true,  
       }  
     );  
   };  
