@@ -4,7 +4,6 @@ import toast from 'react-hot-toast';
 import { Card } from '../components/ui';  
 import { Button } from '../components/ui';  
 import { securityService } from '../services';  
-import { STRENGTH_LABELS, STRENGTH_BADGE_STYLES } from '../utils/helpers';  
   
 export default function PasswordGenerator() {  
   const [length, setLength] = useState(16);  
@@ -44,13 +43,13 @@ export default function PasswordGenerator() {
         length,  
         ...options,  
       });  
-  
+        
       setPassword(res.data.password);  
       setStrength(res.data.strength);  
       setFeedback(res.data.strength.feedback || []);  
       toast.success('Mot de passe généré avec succès');  
     } catch (error) {  
-      const errorMsg = error.response?.data?.message || 'Erreur lors de la génération';  
+      const errorMsg = error.message || 'Erreur lors de la génération';  
       toast.error(errorMsg);  
       console.error('Password generation error:', error);  
     } finally {  
@@ -76,6 +75,22 @@ export default function PasswordGenerator() {
       }  
       return updated;  
     });  
+  };  
+  
+  const strengthColors = {  
+    'very-weak': 'text-red-500 bg-red-600/5 border-red-500/30',  
+    'weak': 'text-red-400 bg-red-600/5 border-red-500/30',  
+    'fair': 'text-yellow-400 bg-yellow-600/5 border-yellow-500/30',  
+    'strong': 'text-blue-400 bg-blue-600/5 border-blue-500/30',  
+    'very-strong': 'text-emerald-400 bg-emerald-600/5 border-emerald-500/30',  
+  };  
+  
+  const strengthLabels = {  
+    'very-weak': 'Très faible',  
+    'weak': 'Faible',  
+    'fair': 'Moyen',  
+    'strong': 'Fort',  
+    'very-strong': 'Très fort',  
   };  
   
   return (  
@@ -139,10 +154,10 @@ export default function PasswordGenerator() {
                   </div>  
   
                   {strength && (  
-                    <div className={`px-4 py-3 rounded-lg border ${STRENGTH_BADGE_STYLES[strength.label]}`}>  
+                    <div className={`px-4 py-3 rounded-lg border ${strengthColors[strength.label]}`}>  
                       <div className="flex items-center justify-between mb-2">  
                         <div className="font-medium">  
-                          Force: {STRENGTH_LABELS[strength.label]}  
+                          Force: {strengthLabels[strength.label]}  
                         </div>  
                         <div className="text-sm">  
                           Score: {strength.score}/4  
@@ -161,7 +176,7 @@ export default function PasswordGenerator() {
                     </div>  
                   )}  
   
-                  <Button  
+                  <Button   
                     onClick={generatePassword}  
                     disabled={loading}  
                     className="w-full"  
@@ -188,10 +203,10 @@ export default function PasswordGenerator() {
                   />  
   
                   {strength && (  
-                    <div className={`px-4 py-3 rounded-lg border ${STRENGTH_BADGE_STYLES[strength.label]}`}>  
+                    <div className={`px-4 py-3 rounded-lg border ${strengthColors[strength.label]}`}>  
                       <div className="flex items-center justify-between mb-2">  
                         <div className="font-medium">  
-                          Force: {STRENGTH_LABELS[strength.label]}  
+                          Force: {strengthLabels[strength.label]}  
                         </div>  
                         <div className="text-sm">  
                           Score: {strength.score}/4  

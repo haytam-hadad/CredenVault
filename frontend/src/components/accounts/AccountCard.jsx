@@ -1,20 +1,26 @@
-import { ExternalLink, Star, Trash2, Edit, Shield, Lock, AlertCircle, CheckCircle2 } from 'lucide-react';  
-import {  
-  STRENGTH_LABELS,  
-  CATEGORY_LABELS,  
-  formatDate,  
-  getStrengthTextColor,  
-  getStrengthBgColor,  
-} from '../../utils/helpers';  
+import { ExternalLink, Star, Trash2, Edit, Shield, ShieldAlert, Lock, AlertCircle, CheckCircle2 } from 'lucide-react';  
+import { STRENGTH_LABELS, CATEGORY_LABELS, formatDate } from '../../utils/helpers';  
   
 export default function AccountCard({ account, onEdit, onDelete, onToggleFavorite }) {  
   const strengthScore = account.passwordStrength?.score;  
+  const getStrengthColor = (score) => {  
+    if (score <= 1) return 'text-red-500';  
+    if (score <= 2) return 'text-orange-500';  
+    if (score <= 3) return 'text-yellow-500';  
+    return 'text-emerald-500';  
+  };  
+  const getStrengthBgColor = (score) => {  
+    if (score <= 1) return 'bg-red-600/10';  
+    if (score <= 2) return 'bg-orange-600/10';  
+    if (score <= 3) return 'bg-yellow-600/10';  
+    return 'bg-emerald-600/20';  
+  };  
   
   return (  
-    <div className="glass-card p-4 bg-slate-800/50 hover:border-brand-500 hover:bg-brand-500/5 transition-all group border-l-4 border-l-brand-500">  
+    <div className="glass-card p-4 sm:p-5 bg-slate-800/50 hover:border-brand-500 hover:bg-brand-500/5 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand-500/10 transition-all duration-200 group border-l-4 border-l-brand-500">  
       <div className="flex items-start justify-between gap-3">  
         <div className="flex items-center gap-3 min-w-0">  
-          <div className="w-10 h-10 rounded-xl bg-brand-600/20 flex items-center justify-center shrink-0">  
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-brand-600/20 flex items-center justify-center shrink-0 group-hover:bg-brand-600/30 transition-colors">  
             <span className="text-brand-400 font-bold text-lg">  
               {account.serviceName?.charAt(0).toUpperCase()}  
             </span>  
@@ -28,7 +34,7 @@ export default function AccountCard({ account, onEdit, onDelete, onToggleFavorit
           </div>  
         </div>  
   
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">  
+        <div className="flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0">  
           {onToggleFavorite && (  
             <button  
               onClick={() => onToggleFavorite(account)}  
@@ -58,11 +64,11 @@ export default function AccountCard({ account, onEdit, onDelete, onToggleFavorit
       </div>  
   
       <div className="space-y-3 mt-4 pt-3 border-t border-slate-700/100">  
-        <div className="flex items-center justify-between text-xs">  
+        <div className="flex items-center justify-between gap-2 text-xs flex-wrap">  
           <span className="px-2.5 py-1 bg-brand-500 rounded-lg text-slate-900 font-medium">  
             {CATEGORY_LABELS[account.category] || account.category}  
           </span>  
-          <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-medium ${getStrengthBgColor(strengthScore)} ${getStrengthTextColor(strengthScore)}`}>  
+          <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-medium ${getStrengthBgColor(strengthScore)} ${getStrengthColor(strengthScore)}`}>  
             {strengthScore >= 3 ? (  
               <CheckCircle2 className="w-3.5 h-3.5" />  
             ) : strengthScore >= 2 ? (  
@@ -87,8 +93,12 @@ export default function AccountCard({ account, onEdit, onDelete, onToggleFavorit
         )}  
   
         <div className="space-y-1 pt-2 border-t border-slate-800/50">  
-          <p className="text-xs text-slate-500">Créé le {formatDate(account.createdAt)}</p>  
-          <p className="text-xs text-slate-500">Modifié le {formatDate(account.updatedAt)}</p>  
+          <p className="text-xs text-slate-500">  
+            Créé le {formatDate(account.createdAt)}  
+          </p>  
+          <p className="text-xs text-slate-500">  
+            Modifié le {formatDate(account.updatedAt)}  
+          </p>  
         </div>  
       </div>  
     </div>  
