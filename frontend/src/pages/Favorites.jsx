@@ -4,7 +4,6 @@ import {
   Copy,  
   Eye,  
   EyeOff,  
-  Trash2,  
   Check,  
   ExternalLink,  
   Shield,  
@@ -170,7 +169,7 @@ export default function Favorites() {
       {favorites.length > 0 ? (  
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-stagger">  
           {favorites.map((account) => {  
-            const strengthScore = account.passwordStrength?.score;  
+            const strengthScore = account.passwordStrength?.score;
             const isRevealed = Boolean(revealed[account._id]);  
             const isCopied = copiedId === account._id;  
             return (  
@@ -244,7 +243,7 @@ export default function Favorites() {
                         onClick={() => removeFavorite(account)}  
                         className="flex-1"  
                       >  
-                        <Trash2 className="w-4 h-4" />  
+                        <Star className="w-4 h-4" />  
                         Retirer  
                       </Button>  
                     </div>  

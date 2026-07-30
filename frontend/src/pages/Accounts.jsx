@@ -307,7 +307,7 @@ export default function Accounts() {
         </div>  
       ) : (  
         <>  
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 animate-stagger">  
+          <div className="grid lg:grid-cols-1 xl:grid-cols-2 gap-4 animate-stagger">  
             {accounts.map((account) => (  
               <AccountCard  
                 key={account._id}  

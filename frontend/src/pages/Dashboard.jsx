@@ -11,11 +11,12 @@ import {
   CheckCircle2,  
   AlertCircle,  
   Activity,  
+  Star,  
+  ChevronRight,  
 } from 'lucide-react';  
-import { Card, Spinner } from '../components/ui';  
+import { Card } from '../components/ui';  
 import { securityService, accountService } from '../services';  
-import AccountCard from '../components/accounts/AccountCard';  
-import { formatDate } from '../utils/helpers';  
+import { formatDate, CATEGORY_LABELS } from '../utils/helpers';  
   
 export default function Dashboard() {  
   const [stats, setStats] = useState(null);  
@@ -29,7 +30,7 @@ export default function Dashboard() {
       try {  
         const [dashRes, accountsRes, statsRes] = await Promise.all([  
           securityService.getDashboard(),  
-          accountService.getAll({ limit: 4 }),  
+          accountService.getAll(),  
           accountService.getStats(),  
         ]);  
         setStats(statsRes.data || dashRes.data.stats);  
@@ -46,7 +47,11 @@ export default function Dashboard() {
   }, []);  
   
   if (loading) {  
-    return <Spinner className="h-64" />;  
+    return (  
+      <div className="flex items-center justify-center h-64">  
+        <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />  
+      </div>  
+    );  
   }  
   
   const statCards = [  
@@ -146,9 +151,32 @@ export default function Dashboard() {
                 </Link>  
               </div>  
             ) : (  
-              <div className="grid gap-3">  
+              <div className="space-y-2">  
                 {recentAccounts.map((account) => (  
-                  <AccountCard key={account._id} account={account} />  
+                  <Link  
+                    key={account._id}  
+                    to="/accounts"  
+                    className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/40 border border-transparent hover:bg-slate-800 hover:border-brand-500/40 transition-colors group"  
+                  >  
+                    <div className="w-9 h-9 rounded-lg bg-brand-600/20 flex items-center justify-center shrink-0">  
+                      <span className="text-brand-400 font-bold">  
+                        {account.serviceName?.charAt(0).toUpperCase()}  
+                      </span>  
+                    </div>  
+                    <div className="min-w-0 flex-1">  
+                      <div className="flex items-center gap-2">  
+                        <p className="font-medium text-slate-100 truncate">{account.serviceName}</p>  
+                        {account.isFavorite && (  
+                          <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400 shrink-0" />  
+                        )}  
+                      </div>  
+                      <p className="text-xs text-slate-400 truncate">{account.username}</p>  
+                    </div>  
+                    <span className="hidden sm:inline text-xs px-2 py-0.5 rounded-md bg-slate-700/50 text-slate-300 shrink-0">  
+                      {CATEGORY_LABELS[account.category] || account.category}  
+                    </span>  
+                    <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-brand-400 shrink-0" />  
+                  </Link>  
                 ))}  
               </div>  
             )}  

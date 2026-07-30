@@ -107,12 +107,12 @@ export default function Navbar({ onMenuClick }) {
   
         <div className="flex items-center gap-4">  
           {isSecure ? (  
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-emerald-600 bg-emerald-600/10 text-emerald-500">  
+            <div className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border border-emerald-600 bg-emerald-600/5 text-emerald-500">  
               <Lock className="w-4 h-4" aria-hidden="true" />  
               2FA activée ✓  
             </div>  
           ) : (  
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-amber-600 bg-amber-600/10 text-amber-500">  
+            <div className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border border-amber-600 bg-amber-600/5 text-amber-500">  
               <Lock className="w-4 h-4" aria-hidden="true" />  
               2FA non activée  
             </div>  
