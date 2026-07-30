@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';  
 import { Plus, Search, ChevronLeft, ChevronRight, Lock, Shield, AlertTriangle, TrendingUp } from 'lucide-react';  
 import toast from 'react-hot-toast';  
-import { Button, Modal } from '../components/ui';  
+import { Button, Modal, Spinner } from '../components/ui';  
 import AccountCard from '../components/accounts/AccountCard';  
 import AccountForm from '../components/accounts/AccountForm';  
 import { useReauth } from '../components/auth/ReAuthContext';  
@@ -45,7 +45,7 @@ export default function Accounts() {
       const res = await accountService.getAll(params);  
       let filteredAccounts = res.data.accounts || [];  
   
-      // Apply strength filter  
+      // Apply strength filter (client-side: backend does not support it)  
       if (strengthFilter) {  
         filteredAccounts = filteredAccounts.filter(acc => {  
           if (strengthFilter === 'weak') return acc.passwordStrength?.score <= 1;  
@@ -55,7 +55,7 @@ export default function Accounts() {
         });  
       }  
   
-      // Apply sorting  
+      // Apply sorting (client-side: backend always sorts by updatedAt)  
       filteredAccounts = filteredAccounts.sort((a, b) => {  
         switch (sortBy) {  
           case 'strength':  
@@ -158,8 +158,13 @@ export default function Accounts() {
       await accountService.update(account._id, {  
         isFavorite: !account.isFavorite,  
       });  
+      // Optimistic local update instead of a full refetch.  
+      setAccounts((prev) =>  
+        prev.map((a) =>  
+          a._id === account._id ? { ...a, isFavorite: !a.isFavorite } : a  
+        )  
+      );  
       toast.success(account.isFavorite ? 'Retiré des favoris' : 'Ajouté aux favoris');  
-      loadAccounts();  
     } catch (error) {  
       toast.error(error.message);  
     }  
@@ -286,10 +291,7 @@ export default function Accounts() {
       </div>  
   
       {loading ? (  
-        <div className="flex flex-col items-center justify-center py-16 gap-3">  
-          <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />  
-          <p className="text-slate-500 text-sm">Chargement de vos comptes...</p>  
-        </div>  
+        <Spinner label="Chargement de vos comptes..." className="py-16" />  
       ) : accounts.length === 0 ? (  
         <div className="text-center py-16 glass-card">  
           <Lock className="w-12 h-12 text-slate-600 mx-auto mb-4 opacity-50" />  

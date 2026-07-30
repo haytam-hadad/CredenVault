@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';  
 import { Star, Copy, Eye, EyeOff, Trash2, Heart } from 'lucide-react';  
 import toast from 'react-hot-toast';  
-import { Card, Button } from '../components/ui';  
+import { Card, Button, Spinner } from '../components/ui';  
 import { useReauth } from '../components/auth/ReAuthContext';  
 import { accountService } from '../services';  
   
@@ -85,11 +85,7 @@ export default function Favorites() {
   };  
   
   if (loading) {  
-    return (  
-      <div className="flex justify-center items-center min-h-screen">  
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-500" />  
-      </div>  
-    );  
+    return <Spinner className="min-h-screen" />;  
   }  
   
   return (  
