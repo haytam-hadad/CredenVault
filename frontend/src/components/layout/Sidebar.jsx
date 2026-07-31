@@ -13,7 +13,6 @@ import {
   Download,  
   Loader2,  
   Lock,  
-  ShieldCheck,  
 } from 'lucide-react';  
 import useAuthStore from '../../store/authStore';  
   
@@ -26,8 +25,6 @@ const links = [
   { to: '/data-management', icon: Download, label: 'Données' },  
   { to: '/activity-log', icon: Activity, label: "Journal d'Activité" },  
   { to: '/settings', icon: Settings, label: 'Paramètres' },  
-  
-  
 ];  
   
 export default function Sidebar({ open, onClose }) {  
@@ -67,10 +64,16 @@ export default function Sidebar({ open, onClose }) {
   
   const navContent = (  
     <>  
-      <header className="relative flex items-center gap-2 px-4 py-5 border-b border-b-slate-800">  
-        <img src="/logo.png" alt="Logo CredenVault" className="w-9 h-9 object-contain" />  
-        <div>  
-          <h1 className="text-lg font-bold text-slate-100 tracking-tight">CredenVault</h1>  
+      <header className="relative flex items-center gap-3 px-4 py-5 border-b border-slate-800">  
+        {/* Logo with brand glow */}  
+        <div className="relative shrink-0">  
+          <div className="absolute inset-0 rounded-xl " aria-hidden="true" />  
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl ">  
+            <img src="/logo.png" alt="Logo CredenVault" className="w-8 h-8 object-contain" />  
+          </div>  
+        </div>  
+        <div className="min-w-0">  
+          <h1 className="text-lg font-bold text-slate-100 tracking-tight truncate">CredenVault</h1>  
           <div className="flex items-center gap-1.5 mt-0.5">  
             <span className="relative flex h-1.5 w-1.5" aria-hidden="true">  
               <span className="motion-reduce:hidden absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />  
@@ -85,7 +88,7 @@ export default function Sidebar({ open, onClose }) {
           type="button"  
           onClick={onClose}  
           aria-label="Fermer le menu"  
-          className="ml-auto border border-slate-500 rounded-lg lg:hidden p-1 text-slate-400 hover:text-slate-100 transition-colors"  
+          className="ml-auto shrink-0 border border-slate-700 rounded-lg lg:hidden p-1 text-slate-400 hover:text-slate-100 hover:border-brand-500/50 transition-colors"  
         >  
           <X className="w-5 h-5" aria-hidden="true" />  
         </button>  
@@ -99,16 +102,21 @@ export default function Sidebar({ open, onClose }) {
             end={end}  
             onClick={onClose}  
             className={({ isActive }) =>  
-              `group flex items-center gap-4 px-3 py-3 rounded-xl text-sm font-medium transition-all border-l-4 ${  
+              `group relative flex items-center gap-4 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-l-4 ${  
                 isActive  
-                  ? 'bg-brand-600/10 text-brand-400 border-brand-500 shadow-[inset_0_0_0_1px_rgba(14,165,233,0.15)]'  
-                  : 'text-slate-400 border-transparent hover:text-slate-100 hover:bg-slate-800'  
+                  ? 'bg-brand-500/10 text-brand-400 border-brand-500 shadow-[inset_0_0_0_1px_rgb(99_123_237_/_0.15)]'  
+                  : 'text-slate-400 border-transparent hover:text-slate-100 hover:bg-slate-800/70 hover:border-slate-700'  
               }`  
             }  
           >  
             {({ isActive }) => (  
               <>  
-                <Icon className="w-5 h-5 shrink-0" aria-hidden="true" />  
+                <Icon  
+                  className={`w-5 h-5 shrink-0 transition-colors ${  
+                    isActive ? 'text-brand-400' : 'text-slate-500 group-hover:text-slate-300'  
+                  }`}  
+                  aria-hidden="true"  
+                />  
                 <span className="flex-1">{label}</span>  
                 {isActive && (  
                   <Lock className="w-3.5 h-3.5 shrink-0 text-brand-500/70" aria-hidden="true" />  
@@ -139,17 +147,18 @@ export default function Sidebar({ open, onClose }) {
   
   return (  
     <>  
-      {open && (  
-        <div  
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"  
-          onClick={onClose}  
-          aria-hidden="true"  
-        />  
-      )}  
+      {/* Mobile overlay with blur + fade */}  
+      <div  
+        className={`fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm lg:hidden transition-opacity duration-300 ${  
+          open ? 'opacity-100' : 'opacity-0 pointer-events-none'  
+        }`}  
+        onClick={onClose}  
+        aria-hidden="true"  
+      />  
   
       <aside  
         aria-label="Barre latérale"  
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 shadow-[inset_-1px_0_0_0_rgba(14,165,233,0.08)] flex flex-col transform transition-transform lg:translate-x-0 ${  
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 shadow-[inset_-1px_0_0_0_rgb(99_123_237_/_0.08)] flex flex-col transform transition-transform duration-300 ease-out lg:translate-x-0 ${  
           open ? 'translate-x-0' : '-translate-x-full'  
         }`}  
       >  

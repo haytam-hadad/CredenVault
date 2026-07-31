@@ -4,7 +4,8 @@ import {
   Menu,  
   Sun,  
   Moon,  
-  Lock,  
+  ShieldCheck,  
+  ShieldAlert,  
   ChevronDown,  
   LogOut,  
   Loader2,  
@@ -82,7 +83,7 @@ export default function Navbar({ onMenuClick }) {
   ).toUpperCase();  
   
   return (  
-    <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800 transition-colors duration-100">  
+    <header className="sticky top-0 z-40 bg-slate-950/70 backdrop-blur-xl border-b border-slate-800/80 transition-colors duration-200">  
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">  
         <div className="flex items-center gap-3">  
           <button  
@@ -105,19 +106,25 @@ export default function Navbar({ onMenuClick }) {
           </div>  
         </div>  
   
-        <div className="flex items-center gap-4">  
+        <div className="flex items-center gap-2 sm:gap-3">  
+          {/* Security badge */}  
           {isSecure ? (  
-            <div className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border border-emerald-600 bg-emerald-600/5 text-emerald-500">  
-              <Lock className="w-4 h-4" aria-hidden="true" />  
-              2FA activée ✓  
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border border-emerald-500/40 bg-emerald-500/10 text-emerald-500">  
+              <ShieldCheck className="w-4 h-4" aria-hidden="true" />  
+              2FA activée  
             </div>  
           ) : (  
-            <div className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border border-amber-600 bg-amber-600/5 text-amber-500">  
-              <Lock className="w-4 h-4" aria-hidden="true" />  
+            <Link  
+              to="/settings"  
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border border-amber-500/40 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors"  
+              title="Activer la 2FA dans les paramètres"  
+            >  
+              <ShieldAlert className="w-4 h-4" aria-hidden="true" />  
               2FA non activée  
-            </div>  
+            </Link>  
           )}  
   
+          {/* Notifications */}  
           <div className="relative" ref={notifRef}>  
             <button  
               type="button"  
@@ -130,7 +137,7 @@ export default function Navbar({ onMenuClick }) {
             >  
               <Bell className="w-5 h-5" aria-hidden="true" />  
               {unreadCount > 0 && (  
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-semibold text-white bg-red-500 rounded-full">  
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-semibold text-white bg-red-500 rounded-full ring-2 ring-slate-950">  
                   {unreadCount > 99 ? "99+" : unreadCount}  
                 </span>  
               )}  
@@ -139,7 +146,7 @@ export default function Navbar({ onMenuClick }) {
             {notifOpen && (  
               <div  
                 role="menu"  
-                className="absolute right-0 mt-2 w-80 rounded-xl border border-slate-800 bg-slate-900 shadow-lg shadow-black/30 overflow-hidden"  
+                className="absolute right-0 mt-2 w-80 origin-top-right rounded-xl border border-slate-800 bg-slate-900 shadow-xl shadow-black/40 overflow-hidden animate-scale-in"  
               >  
                 <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-800">  
                   <p className="text-sm font-semibold text-slate-100">  
@@ -158,14 +165,15 @@ export default function Navbar({ onMenuClick }) {
   
                 <div className="max-h-80 overflow-y-auto">  
                   {notifications.length === 0 ? (  
-                    <div className="px-3 py-6 text-center text-sm text-slate-500">  
+                    <div className="px-3 py-8 text-center text-sm text-slate-500">  
+                      <Bell className="w-6 h-6 mx-auto mb-2 text-slate-700" aria-hidden="true" />  
                       Aucune notification non lue  
                     </div>  
                   ) : (  
                     notifications.slice(0, 5).map((notif) => (  
                       <div  
                         key={notif._id}  
-                        className="flex items-start gap-2 px-3 py-2.5 border-b border-slate-800/60 last:border-b-0"  
+                        className="flex items-start gap-2 px-3 py-2.5 border-b border-slate-800/60 last:border-b-0 hover:bg-slate-800/50 transition-colors"  
                       >  
                         <span className="mt-1.5 w-2 h-2 shrink-0 rounded-full bg-brand-500" />  
                         <div className="min-w-0">  
@@ -204,6 +212,7 @@ export default function Navbar({ onMenuClick }) {
             )}  
           </div>  
   
+          {/* Theme toggle */}  
           <button  
             type="button"  
             onClick={toggleTheme}  
@@ -222,18 +231,25 @@ export default function Navbar({ onMenuClick }) {
             )}  
           </button>  
   
+          {/* Divider before profile */}  
+          <span className="hidden sm:block w-px h-6 bg-slate-800" aria-hidden="true" />  
+  
+          {/* Profile menu */}  
           <div className="relative" ref={menuRef}>  
             <button  
               type="button"  
               onClick={() => setMenuOpen((v) => !v)}  
               aria-haspopup="menu"  
               aria-expanded={menuOpen}  
-              className="flex items-center gap-4 p-2 rounded-lg hover:bg-slate-800 transition-colors"  
+              className="flex items-center gap-2.5 p-1.5 sm:pr-2 rounded-lg hover:bg-slate-800 transition-colors"  
             >  
-              <div className="w-9 h-9 rounded-full bg-brand-600/60 border border-brand-500/30 flex items-center justify-center shrink-0">  
-                <span className="text-white font-semibold text-md">  
-                  {initial}  
-                </span>  
+              <div className="relative shrink-0">  
+                <div className="absolute inset-0 rounded-full bg-brand-500/40 blur-md" aria-hidden="true" />  
+                <div className="relative w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 border border-brand-400/40 flex items-center justify-center">  
+                  <span className="text-white font-semibold text-sm">  
+                    {initial}  
+                  </span>  
+                </div>  
               </div>  
               <div className="text-left hidden sm:block">  
                 <p className="text-sm font-medium text-slate-100 leading-tight">  
@@ -251,10 +267,10 @@ export default function Navbar({ onMenuClick }) {
             {menuOpen && (  
               <div  
                 role="menu"  
-                className="absolute right-0 mt-2 w-56 rounded-xl border border-slate-800 bg-slate-900 shadow-lg shadow-black/30 py-1.5 overflow-hidden"  
+                className="absolute right-0 mt-2 w-56 origin-top-right rounded-xl border border-slate-800 bg-slate-900 shadow-xl shadow-black/40 py-1.5 overflow-hidden animate-scale-in"  
               >  
-                <div className="px-3 py-2 border-b border-slate-800 sm:hidden">  
-                  <p className="text-sm font-medium text-slate-100">  
+                <div className="px-3 py-2 border-b border-slate-800">  
+                  <p className="text-sm font-medium text-slate-100 truncate">  
                     {displayName}  
                   </p>  
                 </div>  
@@ -275,15 +291,9 @@ export default function Navbar({ onMenuClick }) {
                   className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"  
                 >  
                   {isLoggingOut ? (  
-                    <Loader2  
-                      className="w-4 h-4 animate-spin"  
-                      aria-hidden="true"  
-                    />  
+                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />  
                   ) : (  
-                    <LogOut  
-                      className="w-4 h-4 text-red-500"  
-                      aria-hidden="true"  
-                    />  
+                    <LogOut className="w-4 h-4 text-red-500" aria-hidden="true" />  
                   )}  
                   {isLoggingOut ? "Déconnexion…" : "Déconnexion"}  
                 </button>  

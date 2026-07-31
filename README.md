@@ -281,12 +281,10 @@ Health check: `GET /api/health`.
 {  
   userId: ObjectId,                          // unique  
   emailNotificationsEnabled: Boolean,        // default true  
-  passwordRenewalReminderDays: Number,       // 30–365, default 90  
+  passwordRenewalReminderDays: Number,       // 30–365, default 30  
   loginAlertsEnabled: Boolean,               // default true  
-  sessionTimeoutMinutes: Number,             // 15–1440, default 60  
-  requireTwoFactorForSensitiveActions: Boolean,  
   timestamps: true  
-}  
+}
 ```  
   
 ## 🔒 Security Implementation  
