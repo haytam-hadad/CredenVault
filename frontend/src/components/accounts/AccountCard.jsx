@@ -3,7 +3,7 @@ import {
   ExternalLink, Star, Trash2, Edit, Shield, ShieldAlert,  
   AlertCircle, CheckCircle2, Eye, EyeOff, Copy, Check,  
   Mail, Users, Wallet, Briefcase, Gamepad2, Globe,  
-  Clock, CalendarClock, Link as LinkIcon, KeyRound,  
+  Clock, CalendarClock, Link as LinkIcon, KeyRound, StickyNote,  
 } from 'lucide-react';  
 import toast from 'react-hot-toast';  
 import { STRENGTH_LABELS, CATEGORY_LABELS, formatDate } from '../../utils/helpers';  
@@ -249,6 +249,17 @@ export default function AccountCard({ account, onEdit, onDelete, onToggleFavorit
             <LinkIcon className="w-3 h-3" />  
             Ouvrir <ExternalLink className="w-3 h-3" />  
           </a>  
+        )}  
+  
+        {/* Notes — read-only, only shown when the account has a note. */}  
+        {account.notes && (  
+          <div className="flex items-start gap-2 p-2.5 rounded-lg bg-slate-700/30 border border-slate-700/50">  
+            <StickyNote className="w-4 h-4 shrink-0 mt-0.5 text-slate-500" />  
+            <div className="min-w-0">  
+              <p className="text-xs uppercase tracking-wide text-slate-500 mb-0.5">Notes</p>  
+              <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">{account.notes}</p>  
+            </div>  
+          </div>  
         )}  
   
         {/* Dates — labeled grid with icon chips, enlarged fonts for readability */}  
