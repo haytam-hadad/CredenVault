@@ -1,18 +1,20 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import Layout from './components/layout/Layout';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Accounts from './pages/Accounts';
-import Settings from './pages/Settings';
-import Notifications from './pages/Notifications';
-import PasswordGenerator from './pages/PasswordGenerator';
-import ActivityLog from './pages/ActivityLog';
-import Favorites from './pages/Favorites';
-import DataManagement from './pages/DataManagement';
-import useAuthStore from './store/authStore';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Layout from "./components/layout/Layout";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import Dashboard from "./pages/Dashboard";
+import Accounts from "./pages/Accounts";
+import Settings from "./pages/Settings";
+import Notifications from "./pages/Notifications";
+import PasswordGenerator from "./pages/PasswordGenerator";
+import ActivityLog from "./pages/ActivityLog";
+import Favorites from "./pages/Favorites";
+import DataManagement from "./pages/DataManagement";
+import useAuthStore from "./store/authStore";
 
 function PublicRoute({ children }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -27,9 +29,9 @@ export default function App() {
         position="top-right"
         toastOptions={{
           style: {
-            background: '#1e293b',
-            color: '#f1f5f9',
-            border: '1px solid #334155',
+            background: "#1e293b",
+            color: "#f1f5f9",
+            border: "1px solid #334155",
           },
         }}
       />
@@ -47,6 +49,22 @@ export default function App() {
           element={
             <PublicRoute>
               <Register />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <ForgotPassword />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <PublicRoute>
+              <ResetPassword />
             </PublicRoute>
           }
         />

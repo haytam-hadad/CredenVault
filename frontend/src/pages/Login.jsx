@@ -101,10 +101,10 @@ export default function Login() {
                 )}  
                 <Link  
                   to="/forgot-password"  
-                  className="hidden text-xs text-brand-400 hover:text-brand-300 font-medium transition-colors"  
+                  className="text-xs text-brand-400 hover:text-brand-300 font-medium transition-colors"  
                 >  
                   Mot de passe oublié ?  
-                </Link>  
+                </Link> 
               </div>  
             </div>  
           </>  

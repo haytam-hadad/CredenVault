@@ -1,6 +1,7 @@
 // backend/src/models/User.js  
 const mongoose = require('mongoose');  
 const bcrypt = require('bcryptjs');  
+const crypto = require('crypto');  
   
 const userSchema = new mongoose.Schema(  
   {  
@@ -50,6 +51,15 @@ const userSchema = new mongoose.Schema(
       default: [],  
       select: false,  
     },  
+    // Password reset (hashed token + expiry)  
+    passwordResetToken: {  
+      type: String,  
+      select: false,  
+    },  
+    passwordResetExpires: {  
+      type: Date,  
+      select: false,  
+    },  
     isActive: {  
       type: Boolean,  
       default: true,  
@@ -66,6 +76,8 @@ const userSchema = new mongoose.Schema(
         delete ret.twoFactorSecret;  
         delete ret.pendingTwoFactorSecret;  
         delete ret.twoFactorRecoveryCodes;  
+        delete ret.passwordResetToken;  
+        delete ret.passwordResetExpires;  
         delete ret.__v;  
         return ret;  
       },  
@@ -83,4 +95,19 @@ userSchema.methods.comparePassword = async function comparePassword(candidate) {
   return bcrypt.compare(candidate, this.password);  
 };  
   
-module.exports = mongoose.model('User', userSchema);
+// Generate a password reset token: store the SHA-256 hash, return the raw token  
+userSchema.methods.createPasswordResetToken = function createPasswordResetToken() {  
+  const rawToken = crypto.randomBytes(32).toString('hex');  
+  
+  this.passwordResetToken = crypto  
+    .createHash('sha256')  
+    .update(rawToken)  
+    .digest('hex');  
+  
+  // Valid for 1 hour  
+  this.passwordResetExpires = Date.now() + 60 * 60 * 1000;  
+  
+  return rawToken;  
+};  
+  
+module.exports = mongoose.model('User', userSchema);  

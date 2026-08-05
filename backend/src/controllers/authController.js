@@ -22,6 +22,8 @@ const {
 const {  
   sendWelcomeEmail,  
   sendLoginAlert,  
+  sendPasswordChangedEmail,  
+  sendPasswordResetEmail,  
 } = require('../services/emailService');  
   
 const {  
@@ -462,7 +464,7 @@ const disable2FA = async (req, res, next) => {
   } catch (error) {  
     next(error);  
   }  
-};
+};  
   
 // ==========================  
 // GET ME  
@@ -520,6 +522,103 @@ const logout = async (req, res, next) => {
   }  
 };  
   
+// ==========================  
+// FORGOT PASSWORD  
+// ==========================  
+const forgotPassword = async (req, res, next) => {  
+  try {  
+    const { email } = req.body;  
+  
+    const clientInfo = getClientInfo(req);  
+  
+    // Generic response prevents email enumeration  
+    const genericResponse = () =>  
+      res.json({  
+        success: true,  
+        message:  
+          'Si un compte existe pour cet email, un lien de réinitialisation a été envoyé.',  
+      });  
+  
+    const user = await User.findOne({ email });  
+  
+    if (!user) {  
+      return genericResponse();  
+    }  
+  
+    const rawToken = user.createPasswordResetToken();  
+    await user.save();  
+  
+    await createSecurityLog({  
+      userId: user._id,  
+      action: 'password-change',  
+      ...clientInfo,  
+      details: 'Demande de réinitialisation du mot de passe',  
+    });  
+  
+    sendPasswordResetEmail(user, rawToken).catch((err) =>  
+      console.error('[Email] password reset failed:', err)  
+    );  
+  
+    return genericResponse();  
+  } catch (error) {  
+    next(error);  
+  }  
+};  
+  
+// ==========================  
+// RESET PASSWORD  
+// ==========================  
+const resetPassword = async (req, res, next) => {  
+  try {  
+    const { token, password } = req.body;  
+  
+    const hashedToken = crypto  
+      .createHash('sha256')  
+      .update(token)  
+      .digest('hex');  
+  
+    const user = await User.findOne({  
+      passwordResetToken: hashedToken,  
+      passwordResetExpires: { $gt: Date.now() },  
+    }).select('+password +passwordResetToken +passwordResetExpires');  
+  
+    if (!user) {  
+      return next(new AppError('Token invalide ou expiré', 400));  
+    }  
+  
+    user.password = password; // hashed by the pre('save') hook  
+    user.passwordResetToken = undefined;  
+    user.passwordResetExpires = undefined;  
+    await user.save();  
+  
+    const clientInfo = getClientInfo(req);  
+  
+    await createSecurityLog({  
+      userId: user._id,  
+      action: 'password-change',  
+      ...clientInfo,  
+      details: 'Mot de passe réinitialisé via lien email',  
+    });  
+  
+    const settings = await SecuritySettings.findOne({ userId: user._id });  
+    if (settings?.emailNotificationsEnabled) {  
+      sendPasswordChangedEmail(user, {  
+        createdAt: new Date(),  
+        ipAddress: clientInfo.ipAddress,  
+      }).catch((err) =>  
+        console.error('[Email] password changed failed:', err)  
+      );  
+    }  
+  
+    res.json({  
+      success: true,  
+      message: 'Mot de passe réinitialisé avec succès',  
+    });  
+  } catch (error) {  
+    next(error);  
+  }  
+};  
+  
 module.exports = {  
   register,  
   login,  
@@ -530,4 +629,6 @@ module.exports = {
   getMe,  
   verifyPassword,  
   logout,  
+  forgotPassword,  
+  resetPassword,  
 };

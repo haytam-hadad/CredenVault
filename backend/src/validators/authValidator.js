@@ -68,10 +68,25 @@ const verifyPasswordSchema = z.object({
   }),  
 });  
   
+const forgotPasswordSchema = z.object({  
+  body: z.object({  
+    email: z.string().email('Email invalide'),  
+  }),  
+});  
+  
+const resetPasswordSchema = z.object({  
+  body: z.object({  
+    token: z.string().min(1, 'Token requis'),  
+    password: passwordSchema,  
+  }),  
+});  
+  
 module.exports = {  
   registerSchema,  
   loginSchema,  
   verify2FASchema,  
   disable2FASchema,  
   verifyPasswordSchema,  
+  forgotPasswordSchema,  
+  resetPasswordSchema,  
 };

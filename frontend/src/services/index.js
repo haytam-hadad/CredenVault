@@ -13,7 +13,9 @@ export const authService = {
     api.post('/auth/2fa/recovery-codes/regenerate', { password }),  
   verifyPassword: (password) =>  
     api.post('/auth/verify-password', { password }),  
-};  
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),  
+  resetPassword: (data) => api.post('/auth/reset-password', data),  
+};
   
 export const userService = {  
   getProfile: () => api.get('/users/profile'),  

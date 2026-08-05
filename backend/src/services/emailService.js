@@ -207,7 +207,7 @@ const sendEmail = async ({ to, subject, html, text }) => {
     console.error('[EmailService] Email sending failed');  
     throw error;  
   }  
-};
+};  
   
 const sendPasswordRenewalReminder = async (user, accounts) => {  
   const accountList = accounts  
@@ -461,12 +461,68 @@ const sendWelcomeEmail = async (user) => {
   });  
 };  
   
+const sendPasswordResetEmail = async (user, resetToken) => {  
+  console.log('[EmailService] sendPasswordResetEmail called:', {  
+    user: user.email,  
+  });  
+  
+  const resetUrl = `${FRONTEND_URL}/reset-password?token=${resetToken}`;  
+  
+  const html = emailTemplate({  
+    title: 'Password Reset',  
+    content: `  
+  
+    <h2 style="color:#ffffff;margin-top:0;">  
+    🔑 Réinitialisation du mot de passe  
+    </h2>  
+  
+    <p>  
+    Bonjour <strong>${user.firstName || user.email}</strong>,  
+    </p>  
+  
+    <p style="color:${BRAND.textMuted};">  
+    Vous avez demandé la réinitialisation de votre mot de passe CredenVault.  
+    Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.  
+    Ce lien est valable pendant 1 heure.  
+    </p>  
+  
+    <div style="text-align:center;margin:30px 0;">  
+    ${button('Réinitialiser mon mot de passe', resetUrl)}  
+    </div>  
+  
+    <div style="  
+    background:#451a03;  
+    color:#fdba74;  
+    padding:15px;  
+    border-radius:10px;  
+    ">  
+  
+    ⚠️ Si vous n'êtes pas à l'origine de cette demande, ignorez cet email —  
+    votre mot de passe restera inchangé.  
+  
+    </div>  
+  
+    <p style="margin-top:30px;">  
+    — L'équipe CredenVault  
+    </p>  
+  
+    `,  
+  });  
+  
+  return sendEmail({  
+    to: user.email,  
+    subject: 'CredenVault — Réinitialisation de votre mot de passe',  
+    html,  
+  });  
+};  
+  
 console.log('[EmailService] Exports:', {  
   sendEmail: typeof sendEmail,  
   sendPasswordRenewalReminder: typeof sendPasswordRenewalReminder,  
   sendLoginAlert: typeof sendLoginAlert,  
   sendWelcomeEmail: typeof sendWelcomeEmail,  
   sendPasswordChangedEmail: typeof sendPasswordChangedEmail,  
+  sendPasswordResetEmail: typeof sendPasswordResetEmail,  
 });  
   
 module.exports = {  
@@ -475,4 +531,5 @@ module.exports = {
   sendLoginAlert,  
   sendWelcomeEmail,  
   sendPasswordChangedEmail,  
+  sendPasswordResetEmail,  
 };
